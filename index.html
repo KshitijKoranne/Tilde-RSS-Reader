@@ -3,13 +3,79 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Tilde — all the sites you read, in one place</title>
+    <title>Tilde — a free RSS reader for Mac and the web</title>
     <meta
       name="description"
-      content="A free RSS reader with no account. Tilde collects new posts from the sites you pick, keeps everything on your own device, and lets you actually reach the end."
+      content="Tilde collects new posts from the blogs and news sites you pick. Free, no account, no ads, and everything stays on your own device. Web app and Mac app."
     />
+    <link rel="canonical" href="https://tilde-rss-reader.vercel.app/" />
     <meta name="theme-color" content="#f3f2f2" />
     <link rel="icon" type="image/svg+xml" href="/tilde-icon.svg" />
+
+    <!-- How the link looks when someone shares it. og:image must be absolute:
+         a crawler has no page to resolve a relative path against. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Tilde" />
+    <meta property="og:url" content="https://tilde-rss-reader.vercel.app/" />
+    <meta property="og:title" content="Tilde — a free RSS reader for Mac and the web" />
+    <meta
+      property="og:description"
+      content="All the sites you read, in one place. No account, no ads, no algorithm — and everything stays on your own device."
+    />
+    <meta property="og:image" content="https://tilde-rss-reader.vercel.app/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Tilde — all the sites you read, in one place. Web, macOS app, no tracking, open source."
+    />
+    <meta property="og:locale" content="en" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Tilde — a free RSS reader for Mac and the web" />
+    <meta
+      name="twitter:description"
+      content="All the sites you read, in one place. No account, no ads, no algorithm — and everything stays on your own device."
+    />
+    <meta name="twitter:image" content="https://tilde-rss-reader.vercel.app/og.png" />
+
+    <!-- The page is rendered by JavaScript, so this is the one description of
+         Tilde a crawler can read without executing anything. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://tilde-rss-reader.vercel.app/#website",
+            "url": "https://tilde-rss-reader.vercel.app/",
+            "name": "Tilde",
+            "description": "A free RSS reader with no account, for the web and macOS."
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "Tilde",
+            "applicationCategory": "NewsApplication",
+            "applicationSubCategory": "RSS reader",
+            "operatingSystem": "macOS 10.15 or later, and any modern web browser",
+            "url": "https://tilde-rss-reader.vercel.app/",
+            "downloadUrl": "https://github.com/KshitijKoranne/Tilde-RSS-Reader/releases/latest",
+            "softwareVersion": "1.0.0",
+            "license": "https://opensource.org/licenses/MIT",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "author": { "@type": "Organization", "name": "KJR Labs", "url": "https://kjrlabs.in" },
+            "description": "Tilde collects new posts from the blogs, news sites and newsletters you pick — and nothing else. No account, no ads, no algorithm, and every article is kept and searchable on your own device.",
+            "featureList": [
+              "Import and export OPML",
+              "Full-text search of everything you have read",
+              "Works offline",
+              "Keyboard shortcuts",
+              "No account and no tracking"
+            ]
+          }
+        ]
+      }
+    </script>
 
     <!-- Installable: the manifest launches straight into /app, so a docked or
          home-screen Tilde skips the landing page while the web URL keeps it. -->

@@ -86,7 +86,7 @@ export function Landing() {
   const unread = glance?.unread ?? 0
 
   useEffect(() => {
-    document.title = 'Tilde — all the sites you read, in one place'
+    document.title = 'Tilde — a free RSS reader for Mac and the web'
   }, [])
 
   return (
@@ -146,12 +146,12 @@ export function Landing() {
               </span>
             </Link>
             {mac ? (
-              <a href="#mac" className="btn btn-ghost">
-                Download for Mac
+              <a href={MAC_RELEASE} className="btn btn-secondary">
+                <span className="btn-label">Download for Mac</span>
               </a>
             ) : (
-              <a href="#why" className="btn btn-ghost">
-                How it works
+              <a href="#why" className="btn btn-secondary">
+                <span className="btn-label">How it works</span>
               </a>
             )}
           </div>

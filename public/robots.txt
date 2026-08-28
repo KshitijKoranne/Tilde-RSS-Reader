@@ -1,0 +1,13 @@
+# Tilde — https://tilde-rss-reader.vercel.app
+#
+# /app is the reader itself. It serves the same HTML shell as the landing page
+# (see the rewrite in vercel.json), so letting it be indexed would only split
+# one page's ranking across two URLs. There is nothing to read there anyway —
+# every article lives in the visitor's own browser, not on the server.
+
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /api/
+
+Sitemap: https://tilde-rss-reader.vercel.app/sitemap.xml
