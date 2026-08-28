@@ -13,6 +13,7 @@
     "mac:build": "tauri build --target universal-apple-darwin"
   },
   "dependencies": {
+    "@mozilla/readability": "^0.6.0",
     "@tauri-apps/api": "^2.11.1",
     "idb": "^8.0.3",
     "react": "^18.3.1",

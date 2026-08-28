@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import * as db from './db'
+import { extractArticle } from './extract'
 import { makeFeed, refreshFeed, resolveFeed, toArticles } from './feeds'
 import { writeGlance } from './glance'
 import { downloadOpml, parseOpml } from './opml'
@@ -53,6 +54,9 @@ interface TildeStore {
   setRead(id: string, read: boolean): void
   toggleStar(id: string): void
   markAllRead(): void
+  /** Fetches the linked page and stores its readable part. Throws on failure
+   *  so the caller can show the reason where the reader is looking. */
+  loadFullText(id: string): Promise<void>
 
   addFeed(input: string): Promise<void>
   removeFeed(id: string): Promise<void>
@@ -353,6 +357,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [mutateArticle],
   )
 
+  /* Feeds that carry only a link — Hacker News is the obvious one — leave the
+   * reader with nothing to read. This goes and gets the article itself, on
+   * request and never on its own. */
+  const loadFullText = useCallback(
+    async (id: string) => {
+      const article = latest.current.articles.find((a) => a.id === id)
+      if (!article?.link) throw new Error('This article has no link to follow.')
+
+      const { html, text } = await extractArticle(article.link)
+
+      // The archive setting governs what is kept on disk, so honour it here
+      // too: with it off, the text is shown now and not written down.
+      if (latest.current.settings.keepArchive) {
+        mutateArticle(id, (a) => ({ ...a, contentHtml: html, contentText: text }))
+      } else {
+        setArticles((list) =>
+          list.map((a) => (a.id === id ? { ...a, contentHtml: html, contentText: text } : a)),
+        )
+      }
+    },
+    [mutateArticle],
+  )
+
   const markAllRead = useCallback(() => {
     const ids = new Set(visible.map((a) => a.id))
     if (!ids.size) return
@@ -475,7 +502,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     view, feedId, query, selectedId, showAdd, zen, refreshing, busy, toast,
     visible, selected, unreadCount, savedCount, unreadByFeed,
     go, step, open, setQuery,
-    setRead, toggleStar, markAllRead,
+    setRead, toggleStar, markAllRead, loadFullText,
     addFeed, removeFeed, refreshAll, importOpml, exportOpml,
     update, setShowAdd, setZen, notify,
   }

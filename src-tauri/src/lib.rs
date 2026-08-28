@@ -258,6 +258,19 @@ mod tests {
         assert!(document.content_type.contains("xml"));
     }
 
+    /// "Read the full article" fetches an ordinary web page rather than a
+    /// feed. Nothing in `fetch_document` cares about the difference, and this
+    /// is here so that stays true.
+    #[tokio::test]
+    #[ignore]
+    async fn fetches_an_article_page_not_just_a_feed() {
+        let document = fetch_document("https://12factor.net/".into())
+            .await
+            .expect("the page should be reachable");
+        assert!(document.content_type.contains("html"), "{}", document.content_type);
+        assert!(document.text.to_lowercase().contains("<html"));
+    }
+
     #[tokio::test]
     #[ignore]
     async fn reports_a_dead_source_in_words_a_person_can_read() {
