@@ -1,5 +1,6 @@
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { hostOf } from '../lib/format'
+import { isDesktopApp, pickTextFile } from '../lib/platform'
 import { useStore } from '../lib/store'
 import type { ListDensity, ReaderFont, ReaderSize, Settings } from '../lib/types'
 import { Suggestions } from './Suggestions'
@@ -59,19 +60,30 @@ export function SettingsView() {
     }
   }
 
-  const importFile = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file) return
+  const ingestOpml = async (read: () => Promise<string | null>) => {
     setStatus(null)
     try {
-      await store.importOpml(await file.text())
+      const text = await read()
+      if (text !== null) await store.importOpml(text)
     } catch (caught) {
       setStatus({
         text: caught instanceof Error ? caught.message : 'Could not read that file.',
         error: true,
       })
     }
+  }
+
+  const importFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    await ingestOpml(() => file.text())
+  }
+
+  // The Mac app asks the system for the file; the browser has its own input.
+  const chooseFile = () => {
+    if (isDesktopApp()) void ingestOpml(pickTextFile)
+    else fileRef.current?.click()
   }
 
   return (
@@ -174,7 +186,7 @@ export function SettingsView() {
           <button
             type="button"
             className="btn btn-ghost"
-            onClick={() => fileRef.current?.click()}
+            onClick={chooseFile}
             disabled={store.busy}
           >
             Import OPML
@@ -222,14 +234,24 @@ export function SettingsView() {
         </div>
 
         <span className="kicker set-legend">Privacy</span>
-        <p className="set-prose">
-          <Tilde /> fetches your feeds and keeps every article in a local index in this browser.
-          There is no <Tilde /> account, no analytics, and nothing is stored on a server. On the web
-          the fetch
-          passes through this project's own proxy — the only step that exists because browsers cannot
-          request feeds directly — and that proxy keeps no log. Clearing this site's data deletes
-          everything.
-        </p>
+        {isDesktopApp() ? (
+          <p className="set-prose">
+            <Tilde /> fetches your feeds and keeps every article in a local index on this Mac.
+            There is no <Tilde /> account, no analytics, and nothing is stored on a server. The Mac
+            app requests each source directly — nothing passes through this project's proxy, so
+            there is not even a middle step that could keep a log. That index lives in{' '}
+            <code>~/Library/WebKit/in.kjrlabs.tilde</code>, which macOS keeps even after <Tilde /> is
+            moved to the Trash; delete that folder to remove everything.
+          </p>
+        ) : (
+          <p className="set-prose">
+            <Tilde /> fetches your feeds and keeps every article in a local index in this browser.
+            There is no <Tilde /> account, no analytics, and nothing is stored on a server. On the
+            web the fetch passes through this project's own proxy — the only step that exists
+            because browsers cannot request feeds directly — and that proxy keeps no log. Clearing
+            this site's data deletes everything.
+          </p>
+        )}
       </div>
     </section>
   )

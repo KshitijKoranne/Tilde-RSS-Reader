@@ -1,6 +1,7 @@
 /* OPML in and OPML out. Feeds arrive this way and leave this way — the design's
  * second commitment, and the reason there is nothing to lock you in. */
 
+import { saveTextFile } from './platform'
 import type { Feed } from './types'
 
 export interface OpmlEntry {
@@ -59,12 +60,12 @@ ${outlines}
 `
 }
 
-export function downloadOpml(feeds: Feed[]): void {
-  const blob = new Blob([buildOpml(feeds)], { type: 'text/x-opml' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `tilde-subscriptions-${new Date().toISOString().slice(0, 10)}.opml`
-  link.click()
-  URL.revokeObjectURL(url)
+export async function downloadOpml(feeds: Feed[]): Promise<void> {
+  // Where this ends up is the platform's business: a download in a browser, a
+  // save panel in the Mac app.
+  await saveTextFile(
+    `tilde-subscriptions-${new Date().toISOString().slice(0, 10)}.opml`,
+    buildOpml(feeds),
+    'text/x-opml',
+  )
 }

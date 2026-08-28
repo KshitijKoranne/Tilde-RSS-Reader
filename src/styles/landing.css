@@ -206,7 +206,92 @@ html { scroll-behavior: smooth; }
 .footer-by { margin-left: auto; }
 .footer-by a { font-weight: 600; }
 
+.hero-note {
+  font-size: 14px;
+  line-height: 24px;
+  margin: 20px 0 0;
+  color: var(--color-neutral-700);
+}
+
+/* The two-ways-to-read section. Both cards carry the same accent rule on top:
+   neither option is the fallback. */
+.choose { padding: 84px 0 64px; }
+.choose .eyebrow { margin: 0 0 12px; }
+.choose h2 {
+  font-size: 32px;
+  line-height: 38px;
+}
+.choose-lede {
+  font-size: 16px;
+  line-height: 28px;
+  margin: 20px 0 0;
+  max-width: 52ch;
+  color: color-mix(in srgb, var(--color-text) 78%, transparent);
+}
+.choose-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6);
+  margin-top: 40px;
+}
+.choose-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 32px;
+  border: 2px solid var(--color-divider);
+  border-top: 6px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+}
+.choose-card .kicker { color: var(--color-accent-700); }
+.choose-card h3 {
+  font-size: 26px;
+  line-height: 32px;
+  margin: 0;
+}
+.choose-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 24px;
+  color: color-mix(in srgb, var(--color-text) 82%, transparent);
+}
+.choose-list li::marker { color: var(--color-accent); }
+/* Pins both buttons to the same baseline however long the lists run. */
+.choose-card .btn { margin-top: auto; }
+.landing .choose-card a.btn-primary:hover { color: var(--color-bg); }
+.choose-foot {
+  font-size: 13px;
+  line-height: 20px;
+  margin: 0;
+  color: var(--color-neutral-700);
+}
+.choose-details {
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 2px solid var(--color-divider);
+  max-width: 68ch;
+}
+.choose-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 24px;
+}
+.choose-details p {
+  font-size: 15px;
+  line-height: 26px;
+  margin: 16px 0 0;
+  color: color-mix(in srgb, var(--color-text) 80%, transparent);
+}
+
 @media (max-width: 720px) {
   .feature { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 32px 0; }
   .hero { padding: 72px 0 56px; }
+  .choose { padding: 56px 0 40px; }
+  .choose-card { padding: 24px; }
 }

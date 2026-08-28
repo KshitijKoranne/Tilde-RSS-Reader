@@ -454,7 +454,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       notify('There are no feeds to export yet.')
       return
     }
-    downloadOpml(latest.current.feeds)
+    void downloadOpml(latest.current.feeds).catch(() => notify('Could not save that file.'))
   }, [notify])
 
   const update = useCallback((patch: Partial<Settings>) => {

@@ -1,0 +1,39 @@
+[package]
+name = "tilde"
+version = "1.0.0"
+description = "All the sites you read, in one place."
+authors = ["KJR Labs"]
+license = "MIT"
+repository = "https://github.com/KshitijKoranne/Tilde-RSS-Reader"
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "tilde_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+reqwest = { version = "0.12", default-features = false, features = [
+  "native-tls",
+  "gzip",
+  "brotli",
+  "deflate",
+] }
+encoding_rs = "0.8"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt", "macros"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

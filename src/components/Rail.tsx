@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { hostOf } from '../lib/format'
+import { isDesktopApp } from '../lib/platform'
 import { useStore } from '../lib/store'
 import type { View } from '../lib/types'
 import { Brand } from './Wordmark'
@@ -23,9 +24,17 @@ export function Rail() {
   return (
     <aside className="rail">
       <div className="rail-head">
-        <Link to="/" className="rail-brand" aria-label="Tilde home">
-          <Brand size={20} />
-        </Link>
+        {/* In the Mac app there is no landing page to go home to, so the
+            wordmark is just the wordmark. */}
+        {isDesktopApp() ? (
+          <span className="rail-brand">
+            <Brand size={20} />
+          </span>
+        ) : (
+          <Link to="/" className="rail-brand" aria-label="Tilde home">
+            <Brand size={20} />
+          </Link>
+        )}
         <span className="kicker" style={{ color: 'var(--color-neutral-700)' }}>
           v1.0
         </span>

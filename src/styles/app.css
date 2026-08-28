@@ -760,6 +760,13 @@ a.btn-ghost:hover { color: var(--color-accent); }
   max-width: 56ch;
   color: color-mix(in srgb, var(--color-text) 78%, transparent);
 }
+.set-prose code {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.88em;
+  background: var(--color-surface);
+  padding: 1px 4px;
+  overflow-wrap: anywhere;
+}
 
 .set-feeds {
   padding-bottom: 32px;

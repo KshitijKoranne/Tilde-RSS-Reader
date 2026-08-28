@@ -1,0 +1,77 @@
+# Builds the Mac app and attaches it to a release.
+#
+# There is no Apple Developer account behind this, so there is nothing secret
+# to configure: no certificate, no notarisation credentials, no API key. The
+# app is signed ad-hoc (`signingIdentity: "-"` in tauri.conf.json), which is
+# what lets it run at all on Apple silicon — it is not what makes Gatekeeper
+# happy. See "Opening it the first time" in the README.
+#
+# Push a tag to publish:   git tag v1.0.0 && git push origin v1.0.0
+# Or run it by hand from the Actions tab to get a build without a release.
+
+name: macOS app
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    # An Apple silicon runner. It cross-compiles the Intel half of the
+    # universal binary, so one job covers every Mac.
+    runs-on: macos-14
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+
+      - run: npm ci
+
+      - name: Typecheck the frontend
+        run: npm run typecheck
+
+      - name: Test the shell
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+
+      - name: Build the universal app
+        run: npm run mac:build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tilde-macos-dmg
+          path: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+
+      - name: Attach it to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          body: |
+            The Mac app. Universal — Apple silicon and Intel, macOS 10.15 or later.
+
+            **Opening it the first time.** Tilde is not signed with an Apple
+            Developer account, so macOS will not vouch for who built it. Drag
+            Tilde to Applications, then right-click it and choose **Open**, and
+            Open again. If macOS refuses outright, go to **System Settings →
+            Privacy & Security**, scroll to the note about Tilde, and press
+            **Open Anyway**. Once, not every launch.
+
+            Prefer not to trust a binary? `npm install && npm run mac:build`
+            builds the same thing from this tag.

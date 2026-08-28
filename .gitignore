@@ -8,3 +8,4 @@ dist-ssr
 *.tsbuildinfo
 .claude/settings.local.json
 src-tauri/target
+src-tauri/gen
