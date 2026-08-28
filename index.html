@@ -10,6 +10,15 @@
     />
     <meta name="theme-color" content="#f3f2f2" />
     <link rel="icon" type="image/svg+xml" href="/tilde-icon.svg" />
+
+    <!-- Installable: the manifest launches straight into /app, so a docked or
+         home-screen Tilde skips the landing page while the web URL keeps it. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Tilde" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

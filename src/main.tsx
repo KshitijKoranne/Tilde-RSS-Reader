@@ -12,3 +12,13 @@ createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </StrictMode>,
 )
+
+/* Registered only in a real build — a service worker in front of the dev
+ * server would serve yesterday's bundle while you are editing today's. */
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.register('/sw.js').catch(() => {
+      /* an uninstallable Tilde is still a working Tilde */
+    })
+  })
+}

@@ -1,7 +1,8 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { TildeMark } from '../components/TildeMark'
 import { Brand, Tilde } from '../components/Wordmark'
+import { readGlance } from '../lib/glance'
 import '../styles/landing.css'
 
 const FACTS = [
@@ -66,6 +67,11 @@ const KEYS = [
 ]
 
 export function Landing() {
+  // Read once, before first paint, so the button never swaps under the cursor.
+  const [glance] = useState(readGlance)
+  const returning = (glance?.feeds ?? 0) > 0
+  const unread = glance?.unread ?? 0
+
   useEffect(() => {
     document.title = 'Tilde — all the sites you read, in one place'
   }, [])
@@ -82,7 +88,15 @@ export function Landing() {
         <a href="#compare">How it compares</a>
         <a href="#keys">Shortcuts</a>
         <Link to="/app" className="btn btn-primary" style={{ marginLeft: 'auto' }}>
-          Open <Tilde />
+          <span className="btn-label">
+            {returning ? (
+              'Continue reading'
+            ) : (
+              <>
+                Open <Tilde />
+              </>
+            )}
+          </span>
         </Link>
       </nav>
 
@@ -103,7 +117,19 @@ export function Landing() {
           <div className="hero-cta">
             <Link to="/app" className="btn btn-primary">
               <TildeMark size={16} />
-              Open <Tilde />
+              <span className="btn-label">
+                {returning ? (
+                  unread > 0 ? (
+                    `Continue reading — ${unread} unread`
+                  ) : (
+                    'Continue reading'
+                  )
+                ) : (
+                  <>
+                    Open <Tilde />
+                  </>
+                )}
+              </span>
             </Link>
             <a href="#why" className="btn btn-ghost">
               How it works
@@ -197,13 +223,30 @@ export function Landing() {
       <section className="band">
         <div className="band-inner">
           <h3 className="t-display">
-            <span>Start reading.</span>
-            <span>It takes a minute.</span>
+            {returning ? (
+              <>
+                <span>Pick up</span>
+                <span>where you left off.</span>
+              </>
+            ) : (
+              <>
+                <span>Start reading.</span>
+                <span>It takes a minute.</span>
+              </>
+            )}
           </h3>
           <div className="band-cta">
             <Link to="/app" className="btn btn-ghost">
               <TildeMark size={18} />
-              Open <Tilde /> — free, no account
+              <span className="btn-label">
+                {returning ? (
+                  'Continue reading'
+                ) : (
+                  <>
+                    Open <Tilde /> — free, no account
+                  </>
+                )}
+              </span>
             </Link>
           </div>
         </div>

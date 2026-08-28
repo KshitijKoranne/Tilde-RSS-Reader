@@ -91,6 +91,14 @@ Everything lives in IndexedDB under the origin. Clearing site data deletes all o
 
 ---
 
+## Installing it
+
+Tilde is installable from the browser — "Install" in Chrome's address bar, or Share → Add to Home Screen on iOS. The manifest sets `start_url: /app`, so an installed Tilde launches **straight into the reader** while the web address keeps its landing page. Nobody has to choose between the two.
+
+`public/sw.js` caches the app shell, which means an installed Tilde **opens and reads offline** — your articles were already on the device in IndexedDB; the shell was the only thing that needed the network. Two rules keep it honest: HTML is network-first, so a deploy is never held back by a stale cache, and `/api/feed` is never cached, because feeds are the one thing that must be live.
+
+Returning to the landing page is cheap either way: it reads a small `localStorage` crumb (counts only, no titles or URLs) written by the reader, so a returning visitor sees **"Continue reading — 12 unread"** instead of the pitch. No redirect, no flash, and the page stays shareable.
+
 ## Native apps — not built yet
 
 Groundwork only. `src/lib/fetcher.ts` is the single network boundary and already checks for `window.__TILDE_NATIVE_FETCH__` before falling back to the proxy, and `src/lib/db.ts` is the only module that touches storage. A Tauri shell can install a native fetch and drop `api/feed.js` entirely without touching a component, parser, or stylesheet.
@@ -104,7 +112,8 @@ Groundwork only. `src/lib/fetcher.ts` is the single network boundary and already
 - Every one of the 18 suggested feeds fetched and parsed live, covering RSS 2.0, Atom 1.0 and RDF.
 - The sanitiser was run against ten hostile inputs — `<script>`, `onerror`, `javascript:` and `data:text/html` hrefs, `<iframe>`, `<form>`, inline `style`, `<svg>` — all neutralised.
 - The proxy's guards were exercised: `localhost`, `127.0.0.1`, `169.254.169.254`, `10.x`, `192.168.x`, `file://` and malformed URLs are all refused with a readable message.
-- 40 end-to-end browser assertions, including regression tests for each bug fixed in the audit: that a first run makes **zero** network requests, that search ignores markup, that unsubscribing mid-refresh sticks across a reload, and that no `javascript:` href ever reaches the DOM. No console errors.
+- 41 end-to-end browser assertions, including regression tests for each bug fixed in the audit: that a first run makes **zero** network requests, that search ignores markup, that unsubscribing mid-refresh sticks across a reload, and that no `javascript:` href ever reaches the DOM.
+- 25 further assertions for the installable build: manifest shape, every icon fetched, the service worker taking control, the shell cached while `/api/` is not, the landing CTA switching for a returning reader, and — with the network switched off — the app booting and 30 stored articles still readable. No console errors in either suite.
 
 ## Licence
 

@@ -10,6 +10,7 @@ import {
 } from 'react'
 import * as db from './db'
 import { makeFeed, refreshFeed, resolveFeed, toArticles } from './feeds'
+import { writeGlance } from './glance'
 import { downloadOpml, parseOpml } from './opml'
 import { DEFAULT_SETTINGS, type Article, type Feed, type Settings, type View } from './types'
 
@@ -286,6 +287,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   )
 
   const unreadCount = useMemo(() => articles.reduce((n, a) => n + (a.read ? 0 : 1), 0), [articles])
+
+  // Leave a crumb the landing page can read synchronously on the next visit.
+  useEffect(() => {
+    if (!ready) return
+    writeGlance({ feeds: feeds.length, unread: unreadCount })
+  }, [ready, feeds.length, unreadCount])
+
   const savedCount = useMemo(() => articles.reduce((n, a) => n + (a.starred ? 1 : 0), 0), [articles])
   const unreadByFeed = useMemo(() => {
     const counts = new Map<string, number>()

@@ -71,6 +71,11 @@ a.btn-ghost:hover { color: var(--color-accent); }
   margin-inline: 0.04em 0.12em;
 }
 
+/* .btn is inline-flex, which blockifies its children — a bare wordmark span
+   would become its own flex item and stop being a word in a sentence. One
+   wrapper keeps the label as ordinary inline text. */
+.btn-label { display: inline; }
+
 .brand-lockup {
   display: inline-flex;
   align-items: center;
