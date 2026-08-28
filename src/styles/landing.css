@@ -200,9 +200,11 @@ html { scroll-behavior: smooth; }
   color: var(--color-neutral-800);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 10px 16px;
   flex-wrap: wrap;
 }
+.footer-by { margin-left: auto; }
+.footer-by a { font-weight: 600; }
 
 @media (max-width: 720px) {
   .feature { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 32px 0; }
