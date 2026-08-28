@@ -21,6 +21,8 @@ html { scroll-behavior: smooth; }
   margin-left: -0.058em;
 }
 .t-display span { display: block; }
+/* …except the wordmark, which is a word inside the line, not a line of its own. */
+.t-display .wordmark-inline { display: inline; }
 
 .landing .nav {
   padding-inline: max(24px, calc((100% - 1200px) / 2 + 24px));
@@ -29,13 +31,6 @@ html { scroll-behavior: smooth; }
 .landing .nav-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-.landing .nav-brand .wordmark {
-  font-family: 'Caveat', cursive;
-  font-weight: 700;
-  font-size: 34px;
-  line-height: 1;
 }
 
 .wrap {
@@ -138,6 +133,14 @@ html { scroll-behavior: smooth; }
   width: 40%;
   color: var(--color-neutral-800);
 }
+/* The wordmark is a logotype, so it keeps its own case in a header row that
+   otherwise uppercases everything. */
+.compare .table th.compare-brand {
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-accent);
+  font-size: 15px;
+}
 .compare-yes { font-weight: 600; color: var(--color-accent-700); }
 .compare-other { color: var(--color-neutral-700); }
 .compare-note {
@@ -195,6 +198,10 @@ html { scroll-behavior: smooth; }
   font-size: 13px;
   line-height: 28px;
   color: var(--color-neutral-800);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 720px) {

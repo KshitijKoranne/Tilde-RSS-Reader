@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { TildeMark } from '../components/TildeMark'
+import { Brand, Tilde } from '../components/Wordmark'
 import '../styles/landing.css'
 
 const FACTS = [
@@ -10,21 +11,36 @@ const FACTS = [
   { value: 'Quiet', label: 'No ads, no trackers, no suggestions' },
 ]
 
-const REASONS = [
+const REASONS: { num: string; title: string; body: ReactNode }[] = [
   {
     num: '01',
     title: 'You actually finish',
-    body: 'Most readers scroll forever. Tilde shows what is new since you last looked, and once you have read it the list is empty and says so. Nothing refills it to keep you busy.',
+    body: (
+      <>
+        Most readers scroll forever. <Tilde /> shows what is new since you last looked, and once you
+        have read it the list is empty and says so. Nothing refills it to keep you busy.
+      </>
+    ),
   },
   {
     num: '02',
     title: 'You choose what shows up',
-    body: 'Paste a link to any site, or bring your whole list over from another reader in one file. Tilde never reorders your feeds or slips in posts you did not ask for.',
+    body: (
+      <>
+        Paste a link to any site, or bring your whole list over from another reader in one file.{' '}
+        <Tilde /> never reorders your feeds or slips in posts you did not ask for.
+      </>
+    ),
   },
   {
     num: '03',
     title: 'You can find it again',
-    body: 'Every article you open is saved on your own computer, in full. Search a half-remembered phrase months later and it is still there — even if the site that published it is gone.',
+    body: (
+      <>
+        Every article you open is saved on your own computer, in full. Search a half-remembered
+        phrase months later and it is still there — even if the site that published it is gone.
+      </>
+    ),
   },
 ]
 
@@ -58,16 +74,15 @@ export function Landing() {
     <div className="landing">
       <nav className="nav">
         <span className="nav-brand">
-          <span style={{ color: 'var(--color-accent)' }}>
-            <TildeMark size={22} />
-          </span>
-          <span className="wordmark">Tilde</span>
+          <Brand size={22} />
         </span>
-        <a href="#why">Why Tilde</a>
+        <a href="#why">
+          Why <Tilde />
+        </a>
         <a href="#compare">How it compares</a>
         <a href="#keys">Shortcuts</a>
         <Link to="/app" className="btn btn-primary" style={{ marginLeft: 'auto' }}>
-          Open Tilde
+          Open <Tilde />
         </Link>
       </nav>
 
@@ -78,7 +93,7 @@ export function Landing() {
             <span className="hero-accent">In one place.</span>
           </h1>
           <p className="hero-lede">
-            Tilde collects new posts from the blogs, news sites and newsletters you pick — and
+            <Tilde /> collects new posts from the blogs, news sites and newsletters you pick — and
             nothing else. It is free, there is no account, and everything stays on your own device.
           </p>
           <p className="hero-lede">
@@ -87,7 +102,8 @@ export function Landing() {
           </p>
           <div className="hero-cta">
             <Link to="/app" className="btn btn-primary">
-              Open Tilde
+              <TildeMark size={16} />
+              Open <Tilde />
             </Link>
             <a href="#why" className="btn btn-ghost">
               How it works
@@ -125,13 +141,17 @@ export function Landing() {
 
         <section id="compare" className="compare">
           <span className="eyebrow">How it compares</span>
-          <h2 className="t-display">Tilde and a typical cloud reader</h2>
+          <h2 className="t-display">
+            <Tilde /> and a typical cloud reader
+          </h2>
           <div className="compare-scroll">
             <table className="table">
               <thead>
                 <tr>
                   <th />
-                  <th>Tilde</th>
+                  <th className="compare-brand">
+                    <Tilde />
+                  </th>
                   <th>Typical cloud reader</th>
                 </tr>
               </thead>
@@ -147,7 +167,7 @@ export function Landing() {
             </table>
           </div>
           <p className="compare-note">
-            Tilde is a web page, so there is nothing to install. Open it, add a few sites, and it
+            <Tilde /> is a web page, so there is nothing to install. Open it, add a few sites, and it
             remembers them next time.
           </p>
         </section>
@@ -182,14 +202,18 @@ export function Landing() {
           </h3>
           <div className="band-cta">
             <Link to="/app" className="btn btn-ghost">
-              Open Tilde — free, no account
+              <TildeMark size={18} />
+              Open <Tilde /> — free, no account
             </Link>
           </div>
         </div>
       </section>
 
       <div className="wrap">
-        <footer>Tilde — a calm reader for the sites you choose.</footer>
+        <footer>
+          <Brand size={18} />
+          <span>a calm reader for the sites you choose.</span>
+        </footer>
       </div>
     </div>
   )

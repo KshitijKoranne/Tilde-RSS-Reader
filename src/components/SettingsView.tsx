@@ -3,6 +3,7 @@ import { hostOf } from '../lib/format'
 import { useStore } from '../lib/store'
 import type { ListDensity, ReaderFont, ReaderSize, Settings } from '../lib/types'
 import { Suggestions } from './Suggestions'
+import { Tilde } from './Wordmark'
 
 const FONT_NOTES: Record<ReaderFont, string> = {
   Archivo: 'The system face — the interface and the article set in one voice.',
@@ -222,8 +223,9 @@ export function SettingsView() {
 
         <span className="kicker set-legend">Privacy</span>
         <p className="set-prose">
-          Tilde fetches your feeds and keeps every article in a local index in this browser. There is
-          no Tilde account, no analytics, and nothing is stored on a server. On the web the fetch
+          <Tilde /> fetches your feeds and keeps every article in a local index in this browser.
+          There is no <Tilde /> account, no analytics, and nothing is stored on a server. On the web
+          the fetch
           passes through this project's own proxy — the only step that exists because browsers cannot
           request feeds directly — and that proxy keeps no log. Clearing this site's data deletes
           everything.

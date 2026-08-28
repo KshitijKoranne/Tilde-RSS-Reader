@@ -1,8 +1,10 @@
-import { useRef } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { fullDate } from '../lib/format'
 import { useMarkReadOnScroll, useScrollToTop } from '../lib/hooks'
 import { useStore } from '../lib/store'
 import { ArticleBody } from './ArticleBody'
+import { TildeMark } from './TildeMark'
+import { Tilde } from './Wordmark'
 
 function EmptyState() {
   const store = useStore()
@@ -10,10 +12,12 @@ function EmptyState() {
   if (!store.feeds.length) {
     return (
       <div className="read-empty">
-        <span className="read-empty-mark" />
+        <span className="read-empty-mark">
+          <TildeMark size={28} />
+        </span>
         <p className="t-h read-empty-title">No sources yet</p>
         <p className="read-empty-note">
-          Tilde starts empty on purpose — you decide what shows up.
+          <Tilde /> starts empty on purpose — you decide what shows up.
         </p>
         <p className="read-empty-cta">
           <button type="button" className="btn btn-primary" onClick={() => store.go('welcome')}>
@@ -25,7 +29,7 @@ function EmptyState() {
   }
 
   let title: string
-  let note: string
+  let note: ReactNode
 
   if (store.view === 'search') {
     title = store.query.trim() ? 'No matches' : 'Search the archive'
@@ -37,18 +41,28 @@ function EmptyState() {
     note = 'Press s on any article to keep it here.'
   } else if (store.refreshing) {
     title = 'Fetching'
-    note = 'Tilde is asking your sources what is new. This takes a moment on the first run.'
+    note = (
+      <>
+        <Tilde /> is asking your sources what is new. This takes a moment on the first run.
+      </>
+    )
   } else {
     const feed = store.feeds.find((f) => f.id === store.feedId)
     title = 'All caught up'
-    note = `You have read everything from ${
-      feed ? feed.title : `all ${store.feeds.length} sources`
-    }. Tilde will not invent more. Come back tomorrow.`
+    note = (
+      <>
+        You have read everything from{' '}
+        {feed ? feed.title : `all ${store.feeds.length} sources`}. <Tilde /> will not invent more.
+        Come back tomorrow.
+      </>
+    )
   }
 
   return (
     <div className="read-empty">
-      <span className="read-empty-mark" />
+      <span className="read-empty-mark">
+        <TildeMark size={28} />
+      </span>
       <p className="t-h read-empty-title">{title}</p>
       <p className="read-empty-note">{note}</p>
     </div>

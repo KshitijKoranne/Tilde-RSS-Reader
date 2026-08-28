@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ITEMS_PER_FETCH } from '../lib/feeds'
 import { useStore } from '../lib/store'
+import { Tilde } from './Wordmark'
 
 export function AddFeedDialog() {
   const store = useStore()
@@ -51,7 +52,7 @@ export function AddFeedDialog() {
         <h3 className="dialog-title">Add a feed</h3>
         <div className="dialog-body">
           <p className="dialog-intro">
-            Paste a site or feed address. Tilde finds the feed and fetches the last{' '}
+            Paste a site or feed address. <Tilde /> finds the feed and fetches the last{' '}
             {ITEMS_PER_FETCH} entries.
           </p>
           <div className="field">

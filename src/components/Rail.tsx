@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { hostOf } from '../lib/format'
 import { useStore } from '../lib/store'
 import type { View } from '../lib/types'
-import { TildeMark } from './TildeMark'
+import { Brand } from './Wordmark'
 
 interface NavDef {
   key: View
@@ -24,10 +24,7 @@ export function Rail() {
     <aside className="rail">
       <div className="rail-head">
         <Link to="/" className="rail-brand" aria-label="Tilde home">
-          <span style={{ color: 'var(--color-accent)' }}>
-            <TildeMark size={20} />
-          </span>
-          <span className="wordmark">Tilde</span>
+          <Brand size={20} />
         </Link>
         <span className="kicker" style={{ color: 'var(--color-neutral-700)' }}>
           v1.0
