@@ -2,6 +2,7 @@ import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { hostOf } from '../lib/format'
 import { useStore } from '../lib/store'
 import type { ListDensity, ReaderFont, ReaderSize, Settings } from '../lib/types'
+import { Suggestions } from './Suggestions'
 
 const FONT_NOTES: Record<ReaderFont, string> = {
   Archivo: 'The system face — the interface and the article set in one voice.',
@@ -212,6 +213,11 @@ export function SettingsView() {
               </button>
             </div>
           ))}
+        </div>
+
+        <span className="kicker set-legend">Suggested</span>
+        <div className="set-feeds">
+          <Suggestions compact />
         </div>
 
         <span className="kicker set-legend">Privacy</span>

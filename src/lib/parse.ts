@@ -63,9 +63,16 @@ function childHtml(parent: Element, ...names: string[]): string {
   return el.textContent || ''
 }
 
+/* Feeds control these strings, and the results end up in href attributes. A
+ * feed that offers `javascript:…` as an entry's <link> would otherwise become
+ * a script that runs when the reader clicks "Open the original", so the scheme
+ * check belongs here, at the single point where feed URLs are built. */
+const SAFE_SCHEMES = new Set(['http:', 'https:'])
+
 function resolve(href: string, base: string): string {
   try {
-    return new URL(href.trim(), base || undefined).toString()
+    const url = new URL(href.trim(), base || undefined)
+    return SAFE_SCHEMES.has(url.protocol) ? url.toString() : ''
   } catch {
     return ''
   }

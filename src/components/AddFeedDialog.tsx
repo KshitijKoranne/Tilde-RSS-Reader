@@ -7,18 +7,27 @@ export function AddFeedDialog() {
   const [url, setUrl] = useState('')
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const opener = useRef<HTMLElement | null>(null)
 
+  /* Handles every way the dialog can close — the Cancel button, the backdrop,
+   * a successful subscribe, and the global Escape handler, which does not go
+   * through close() at all. Focus goes back where it came from and the field
+   * is cleared, so reopening never shows a stale address. */
   useEffect(() => {
-    if (store.showAdd) inputRef.current?.focus()
+    if (store.showAdd) {
+      opener.current = document.activeElement as HTMLElement | null
+      inputRef.current?.focus()
+      return
+    }
+    setUrl('')
+    setError('')
+    opener.current?.focus?.()
+    opener.current = null
   }, [store.showAdd])
 
   if (!store.showAdd) return null
 
-  const close = () => {
-    setUrl('')
-    setError('')
-    store.setShowAdd(false)
-  }
+  const close = () => store.setShowAdd(false)
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()

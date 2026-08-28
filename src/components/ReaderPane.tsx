@@ -1,18 +1,33 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { fullDate } from '../lib/format'
+import { useMarkReadOnScroll, useScrollToTop } from '../lib/hooks'
 import { useStore } from '../lib/store'
 import { ArticleBody } from './ArticleBody'
 
 function EmptyState() {
   const store = useStore()
 
+  if (!store.feeds.length) {
+    return (
+      <div className="read-empty">
+        <span className="read-empty-mark" />
+        <p className="t-h read-empty-title">No sources yet</p>
+        <p className="read-empty-note">
+          Tilde starts empty on purpose — you decide what shows up.
+        </p>
+        <p className="read-empty-cta">
+          <button type="button" className="btn btn-primary" onClick={() => store.go('welcome')}>
+            See suggested sources
+          </button>
+        </p>
+      </div>
+    )
+  }
+
   let title: string
   let note: string
 
-  if (!store.feeds.length) {
-    title = 'No sources yet'
-    note = 'Add a feed from the rail, or import an OPML file in Settings. Tilde only ever shows you what you asked for.'
-  } else if (store.view === 'search') {
+  if (store.view === 'search') {
     title = store.query.trim() ? 'No matches' : 'Search the archive'
     note = store.query.trim()
       ? 'Try a fragment of a sentence instead of a title.'
@@ -42,26 +57,11 @@ function EmptyState() {
 
 export function ReaderPane() {
   const store = useStore()
-  const { selected, settings } = store
+  const { selected } = store
   const bodyRef = useRef<HTMLDivElement>(null)
 
-  // A new article always starts at the top of the pane.
-  useEffect(() => {
-    if (bodyRef.current) bodyRef.current.scrollTop = 0
-  }, [selected?.id])
-
-  // "Mark read when scrolled past" — the reader only, never the list.
-  useEffect(() => {
-    const element = bodyRef.current
-    if (!element || !selected || selected.read || !settings.markReadOnScroll) return
-
-    const onScroll = () => {
-      const reachedEnd = element.scrollTop + element.clientHeight >= element.scrollHeight - 120
-      if (reachedEnd) store.setRead(selected.id, true)
-    }
-    element.addEventListener('scroll', onScroll, { passive: true })
-    return () => element.removeEventListener('scroll', onScroll)
-  }, [selected, settings.markReadOnScroll, store])
+  useScrollToTop(bodyRef, selected?.id)
+  useMarkReadOnScroll(bodyRef, store.zen ? null : selected)
 
   if (!selected) {
     return (

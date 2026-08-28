@@ -1,12 +1,20 @@
+import { useRef } from 'react'
 import { fullDate } from '../lib/format'
+import { useMarkReadOnScroll, useScrollToTop } from '../lib/hooks'
 import { useStore } from '../lib/store'
 import { ArticleBody } from './ArticleBody'
 
 /** Full-screen reading. One column, no chrome, Esc to leave. */
 export function Zen() {
   const store = useStore()
-  const article = store.selected
-  if (!store.zen || !article) return null
+  const open = store.zen
+  const article = open ? store.selected : null
+  const bodyRef = useRef<HTMLDivElement>(null)
+
+  useScrollToTop(bodyRef, article?.id)
+  useMarkReadOnScroll(bodyRef, article)
+
+  if (!article) return null
 
   const byline = [article.author, fullDate(article.publishedAt)].filter(Boolean).join(' · ')
 
@@ -22,7 +30,7 @@ export function Zen() {
         </button>
       </div>
 
-      <article className="zen-body scroll">
+      <article className="zen-body scroll" ref={bodyRef}>
         <div className="zen-measure">
           <h2 className="t-h zen-title">{article.title}</h2>
           <p className="kicker zen-byline">{byline}</p>

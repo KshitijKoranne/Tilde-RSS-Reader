@@ -85,7 +85,10 @@ export default async function handler(req, res) {
     res.setHeader('X-Tilde-Content-Type', upstream.headers.get('content-type') || '')
     res.setHeader('Access-Control-Expose-Headers', 'X-Tilde-Final-Url, X-Tilde-Content-Type')
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300')
+    // Short: long enough to absorb a reload, short enough that pressing "r"
+    // for a manual refresh returns something new. Vercel drops s-maxage here,
+    // so max-age is what both the CDN and the browser end up honouring.
+    res.setHeader('Cache-Control', 'public, max-age=60')
     return res.status(200).send(buffer)
   } catch (err) {
     const message =

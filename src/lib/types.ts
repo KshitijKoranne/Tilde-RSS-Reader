@@ -23,6 +23,8 @@ export interface Article {
   excerpt: string
   /** Sanitised HTML. Empty when the local archive is switched off. */
   contentHtml: string
+  /** Plain text of contentHtml. Search reads this, never the markup. */
+  contentText: string
   read: boolean
   starred: boolean
   fetchedAt: number
@@ -52,4 +54,5 @@ export const DEFAULT_SETTINGS: Settings = {
   keepArchive: true,
 }
 
-export type View = 'inbox' | 'saved' | 'search' | 'settings'
+/** 'welcome' is the first-run source picker; it is not a rail destination. */
+export type View = 'welcome' | 'inbox' | 'saved' | 'search' | 'settings'

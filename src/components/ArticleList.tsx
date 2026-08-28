@@ -32,6 +32,8 @@ export function ArticleList() {
     meta = `${plural(visible.length, 'article', 'articles')} · ${
       activeFeed ? 'one source' : plural(store.feeds.length, 'source', 'sources')
     }`
+  } else if (!store.feeds.length) {
+    meta = 'No sources yet'
   } else {
     meta = store.refreshing ? 'Fetching…' : 'Nothing left'
   }

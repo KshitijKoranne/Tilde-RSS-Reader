@@ -11,7 +11,6 @@ import {
 import * as db from './db'
 import { makeFeed, refreshFeed, resolveFeed, toArticles } from './feeds'
 import { downloadOpml, parseOpml } from './opml'
-import { SEEDED_FLAG, STARTER_FEEDS } from './starter'
 import { DEFAULT_SETTINGS, type Article, type Feed, type Settings, type View } from './types'
 
 const REFRESH_CONCURRENCY = 4
@@ -46,7 +45,6 @@ interface TildeStore {
   unreadByFeed: Map<string, number>
 
   go(view: View, feedId?: string | null): void
-  select(id: string): void
   step(delta: number): void
   open(id: string): void
   setQuery(query: string): void
@@ -120,20 +118,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const latest = useRef({ feeds, articles, settings })
   latest.current = { feeds, articles, settings }
 
+  /* Unsubscribing mid-refresh used to resurrect the feed: the in-flight fetch
+   * would finish and write the feed and its articles straight back to disk.
+   * This ref is updated synchronously by removeFeed, so ingest can drop
+   * results that arrive for a source the user has already let go of. */
+  const removed = useRef<Set<string>>(new Set())
+
   /* ── persistence ─────────────────────────────────────────────────────── */
 
   const persistArticles = useCallback((changed: Article[]) => {
     void db.saveArticles(changed).catch(() => notify('Could not save to this device.', 'error'))
   }, [notify])
 
+  /* State updaters stay pure — the write to disk happens beside setState, not
+   * inside it, so a double-invoked updater cannot double-write. */
   const mutateArticle = useCallback(
     (id: string, change: (article: Article) => Article) => {
-      setArticles((current) => {
-        const next = current.map((a) => (a.id === id ? change(a) : a))
-        const changed = next.find((a) => a.id === id)
-        if (changed) persistArticles([changed])
-        return next
-      })
+      const current = latest.current.articles.find((a) => a.id === id)
+      if (!current) return
+      const updated = change(current)
+      if (updated === current) return
+      setArticles((list) => list.map((a) => (a.id === id ? updated : a)))
+      persistArticles([updated])
     },
     [persistArticles],
   )
@@ -150,8 +156,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         try {
           const parsed = await refreshFeed(feed)
           // A refresh never renames a source you already see in the rail. The
-          // remote title only fills in when there is nothing better — a starter
-          // feed keeps its curated name, an OPML row without a title gets one.
+          // remote title only fills in when there is nothing better, so an OPML
+          // row imported without a title gets one and nothing else changes.
           const named = feed.title && feed.title !== feed.url
           const title = named ? feed.title : parsed.title || feed.title || feed.url
           const updated = {
@@ -170,8 +176,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       })
 
-      const nextFeeds = outcomes.map((o) => o.feed)
-      const fresh = outcomes.flatMap((o) => o.fresh)
+      const nextFeeds = outcomes.map((o) => o.feed).filter((f) => !removed.current.has(f.id))
+      const fresh = outcomes
+        .flatMap((o) => o.fresh)
+        .filter((a) => !removed.current.has(a.feedId))
+      if (!nextFeeds.length && !fresh.length) return
 
       setFeeds((current) => {
         const byId = new Map(nextFeeds.map((f) => [f.id, f]))
@@ -186,11 +195,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       await db.saveFeeds(nextFeeds)
       await db.saveArticles(fresh)
 
-      const failed = outcomes.filter((o) => o.feed.lastError)
+      const failed = nextFeeds.filter((f) => f.lastError)
       if (failed.length) {
         notify(
           failed.length === 1
-            ? `${failed[0].feed.title}: ${failed[0].feed.lastError}`
+            ? `${failed[0].title}: ${failed[0].lastError}`
             : `${failed.length} sources could not be reached.`,
           'error',
         )
@@ -215,42 +224,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     let cancelled = false
 
     void (async () => {
-      const [storedFeeds, storedArticles, storedSettings, seeded] = await Promise.all([
+      const [storedFeeds, storedArticles, storedSettings] = await Promise.all([
         db.loadFeeds(),
         db.loadArticles(),
         db.loadSettings(),
-        db.getFlag(SEEDED_FLAG),
       ])
       if (cancelled) return
 
+      // Nothing is subscribed on your behalf. An empty install stays empty
+      // until you pick something — the reader offers suggestions instead.
       setSettings(storedSettings)
       setArticles(storedArticles)
-
-      let workingFeeds = storedFeeds
-      if (!storedFeeds.length && !seeded) {
-        // First run: subscribe to the starter set before the first fetch, so
-        // the rail is populated while articles are still arriving.
-        workingFeeds = STARTER_FEEDS.map((starter) => ({
-          id: starter.url,
-          url: starter.url,
-          siteUrl: '',
-          title: starter.title,
-          addedAt: Date.now(),
-          lastFetchedAt: 0,
-          lastError: '',
-        }))
-        await db.saveFeeds(workingFeeds)
-        await db.setFlag(SEEDED_FLAG, true)
-      }
-
-      setFeeds(workingFeeds)
-      latest.current = { feeds: workingFeeds, articles: storedArticles, settings: storedSettings }
+      setFeeds(storedFeeds)
+      if (!storedFeeds.length) setView('welcome')
+      latest.current = { feeds: storedFeeds, articles: storedArticles, settings: storedSettings }
       setReady(true)
 
-      if (workingFeeds.length) {
+      if (storedFeeds.length) {
         setRefreshing(true)
         try {
-          await ingest(workingFeeds)
+          await ingest(storedFeeds)
         } finally {
           if (!cancelled) setRefreshing(false)
         }
@@ -274,8 +267,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (view === 'search') {
       const needle = query.trim().toLowerCase()
       if (!needle) return []
+      // contentText, never contentHtml — searching the markup would match tag
+      // names and href values, and would miss any phrase split by a tag.
       return articles.filter((a) =>
-        `${a.title} ${a.feedTitle} ${a.author} ${a.excerpt} ${a.contentHtml}`
+        `${a.title} ${a.feedTitle} ${a.author} ${a.excerpt} ${a.contentText ?? ''}`
           .toLowerCase()
           .includes(needle),
       )
@@ -332,8 +327,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [setRead],
   )
 
-  const select = useCallback((id: string) => setSelectedId(id), [])
-
   const step = useCallback(
     (delta: number) => {
       setSelectedId((current) => {
@@ -355,17 +348,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const markAllRead = useCallback(() => {
     const ids = new Set(visible.map((a) => a.id))
     if (!ids.size) return
-    setArticles((current) => {
-      const changed: Article[] = []
-      const next = current.map((a) => {
-        if (!ids.has(a.id) || a.read) return a
-        const updated = { ...a, read: true }
-        changed.push(updated)
-        return updated
-      })
-      persistArticles(changed)
-      return next
-    })
+    const changed = latest.current.articles
+      .filter((a) => ids.has(a.id) && !a.read)
+      .map((a) => ({ ...a, read: true }))
+    if (!changed.length) return
+
+    const byId = new Map(changed.map((a) => [a.id, a]))
+    setArticles((current) => current.map((a) => byId.get(a.id) ?? a))
+    persistArticles(changed)
     setSticky(new Set())
     setSelectedId(null)
   }, [visible, persistArticles])
@@ -379,6 +369,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           notify(`You already follow ${parsed.title || url}.`)
           return
         }
+        removed.current.delete(url)
         const feed = makeFeed(url, parsed)
         const fresh = toArticles(feed, parsed, {
           keepArchive: latest.current.settings.keepArchive,
@@ -402,9 +393,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const removeFeed = useCallback(
     async (id: string) => {
       const feed = latest.current.feeds.find((f) => f.id === id)
+      removed.current.add(id)
       setFeeds((current) => current.filter((f) => f.id !== id))
       setArticles((current) => current.filter((a) => a.feedId !== id))
       setFeedId((current) => (current === id ? null : current))
+      // Dropping the last source lands you back where you started, rather than
+      // on an empty list with no way to find the suggestions again.
+      if (latest.current.feeds.length <= 1) setView('welcome')
       await db.deleteFeed(id)
       notify(`Unsubscribed from ${feed?.title ?? 'that source'}.`)
     },
@@ -423,6 +418,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           return
         }
 
+        incoming.forEach((entry) => removed.current.delete(entry.url))
         const added: Feed[] = incoming.map((entry) => ({
           id: entry.url,
           url: entry.url,
@@ -470,7 +466,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ready, feeds, articles, settings,
     view, feedId, query, selectedId, showAdd, zen, refreshing, busy, toast,
     visible, selected, unreadCount, savedCount, unreadByFeed,
-    go, select, step, open, setQuery,
+    go, step, open, setQuery,
     setRead, toggleStar, markAllRead,
     addFeed, removeFeed, refreshAll, importOpml, exportOpml,
     update, setShowAdd, setZen, notify,

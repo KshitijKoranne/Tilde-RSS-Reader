@@ -4,6 +4,7 @@ import { ArticleList } from '../components/ArticleList'
 import { Rail } from '../components/Rail'
 import { ReaderPane } from '../components/ReaderPane'
 import { SettingsView } from '../components/SettingsView'
+import { WelcomeView } from '../components/WelcomeView'
 import { Zen } from '../components/Zen'
 import { useStore } from '../lib/store'
 
@@ -90,6 +91,11 @@ export function Reader() {
     return () => document.body.classList.remove('is-reader')
   }, [])
 
+  // The tab is where an unread count belongs — the app itself never nags.
+  useEffect(() => {
+    document.title = store.unreadCount ? `Tilde (${store.unreadCount})` : 'Tilde'
+  }, [store.unreadCount])
+
   return (
     <div
       className="shell"
@@ -99,7 +105,9 @@ export function Reader() {
     >
       <Rail />
 
-      {store.view === 'settings' ? (
+      {store.view === 'welcome' ? (
+        <WelcomeView />
+      ) : store.view === 'settings' ? (
         <SettingsView />
       ) : (
         <>

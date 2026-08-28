@@ -126,6 +126,28 @@ html { scroll-behavior: smooth; }
   color: color-mix(in srgb, var(--color-text) 78%, transparent);
 }
 
+.compare { padding: 84px 0 64px; }
+.compare h2 {
+  font-size: 32px;
+  line-height: 38px;
+  margin-bottom: 32px;
+}
+.compare-scroll { overflow-x: auto; }
+.compare .table { min-width: 560px; }
+.compare .table td:first-child {
+  width: 40%;
+  color: var(--color-neutral-800);
+}
+.compare-yes { font-weight: 600; color: var(--color-accent-700); }
+.compare-other { color: var(--color-neutral-700); }
+.compare-note {
+  font-size: 16px;
+  line-height: 28px;
+  margin: 28px 0 0;
+  max-width: 52ch;
+  color: color-mix(in srgb, var(--color-text) 78%, transparent);
+}
+
 .keys { padding: 64px 0 84px; }
 .keys .eyebrow { margin: 0 0 12px; }
 .keys h2 {

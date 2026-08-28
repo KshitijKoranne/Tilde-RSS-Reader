@@ -3,47 +3,55 @@ import { Link } from 'react-router-dom'
 import { TildeMark } from '../components/TildeMark'
 import '../styles/landing.css'
 
-const STATS = [
-  { value: '0', label: 'Recommendations, ever' },
-  { value: '100%', label: 'Sources you added yourself' },
-  { value: 'Local', label: 'Where every article is stored' },
-  { value: '1', label: 'Window. Three columns. Nothing else.' },
+const FACTS = [
+  { value: 'Free', label: 'No paid tier, no trial' },
+  { value: 'No sign-up', label: 'Nothing to create or cancel' },
+  { value: 'Yours', label: 'Your reading stays on your device' },
+  { value: 'Quiet', label: 'No ads, no trackers, no suggestions' },
 ]
 
-const COMMITMENTS = [
+const REASONS = [
   {
     num: '01',
-    title: 'Finite by design',
-    body: 'One pass through the day’s articles, then the list is empty and says so. No pull-to-refresh loop, no “you might also like”, no badge inventing work. Reading is something you can complete.',
+    title: 'You actually finish',
+    body: 'Most readers scroll forever. Tilde shows what is new since you last looked, and once you have read it the list is empty and says so. Nothing refills it to keep you busy.',
   },
   {
     num: '02',
-    title: "Your sources, nobody else's",
-    body: 'Paste a URL, import an OPML file, and that is the whole ingestion story. Tilde does not rank your feeds, does not sell what you read, and exports everything back out the day you want to leave.',
+    title: 'You choose what shows up',
+    body: 'Paste a link to any site, or bring your whole list over from another reader in one file. Tilde never reorders your feeds or slips in posts you did not ask for.',
   },
   {
     num: '03',
-    title: 'An archive that answers',
-    body: 'Every article you open is kept in full text, locally, indexed. The half-remembered paragraph from four years ago is three keystrokes away, whether or not the site that published it still exists.',
+    title: 'You can find it again',
+    body: 'Every article you open is saved on your own computer, in full. Search a half-remembered phrase months later and it is still there — even if the site that published it is gone.',
   },
+]
+
+const COMPARISON = [
+  ['Account', 'Not needed', 'Required'],
+  ['Where your reading lives', 'On your device', 'On their servers'],
+  ['Cost', 'Free', 'Free tier, then a subscription'],
+  ['Suggested or sponsored posts', 'None', 'Common'],
+  ['Taking your feeds elsewhere', 'One file, any time', 'Sometimes limited'],
 ]
 
 const KEYS = [
   [
     ['j / k', 'Next, previous article'],
-    ['o', 'Open in the reader'],
+    ['o', 'Open it'],
     ['m', 'Mark read or unread'],
   ],
   [
     ['s', 'Save for later'],
-    ['/', 'Search the archive'],
-    ['a', 'Add a feed'],
+    ['/', 'Search everything you have read'],
+    ['a', 'Add a site'],
   ],
 ]
 
 export function Landing() {
   useEffect(() => {
-    document.title = 'Tilde — an RSS reader that ends'
+    document.title = 'Tilde — all the sites you read, in one place'
   }, [])
 
   return (
@@ -55,8 +63,8 @@ export function Landing() {
           </span>
           <span className="wordmark">Tilde</span>
         </span>
-        <a href="#manifesto">Manifesto</a>
-        <a href="#features">What it does</a>
+        <a href="#why">Why Tilde</a>
+        <a href="#compare">How it compares</a>
         <a href="#keys">Shortcuts</a>
         <Link to="/app" className="btn btn-primary" style={{ marginLeft: 'auto' }}>
           Open Tilde
@@ -64,26 +72,25 @@ export function Landing() {
       </nav>
 
       <div className="wrap">
-        <section id="manifesto" className="hero">
+        <section className="hero">
           <h1 className="t-display">
-            <span>The feed ends.</span>
-            <span className="hero-accent">That is the feature.</span>
+            <span>All the sites you read.</span>
+            <span className="hero-accent">In one place.</span>
           </h1>
           <p className="hero-lede">
-            Tilde is a reader for sources you chose yourself. Nothing is recommended to you. Nothing
-            is inserted between the things you asked for. The unread count goes down and only down,
-            and when it reaches zero the day is finished — no scroll continues past it.
+            Tilde collects new posts from the blogs, news sites and newsletters you pick — and
+            nothing else. It is free, there is no account, and everything stays on your own device.
           </p>
           <p className="hero-lede">
-            Everything you have ever opened stays on your machine, searchable to the sentence. Feeds
-            arrive as OPML and leave as OPML. There is no account watching you read.
+            You will reach the end. No endless scroll, no algorithm deciding what you see, and
+            nothing recommended to you.
           </p>
           <div className="hero-cta">
             <Link to="/app" className="btn btn-primary">
-              Open the reader
+              Open Tilde
             </Link>
-            <a href="#features" className="btn btn-ghost">
-              What it does
+            <a href="#why" className="btn btn-ghost">
+              How it works
             </a>
           </div>
         </section>
@@ -92,10 +99,10 @@ export function Landing() {
 
         <section className="stats">
           <div className="stats-grid">
-            {STATS.map((stat) => (
-              <div key={stat.label}>
-                <p className="t-display stat-num">{stat.value}</p>
-                <p className="stat-label">{stat.label}</p>
+            {FACTS.map((fact) => (
+              <div key={fact.label}>
+                <p className="t-display stat-num">{fact.value}</p>
+                <p className="stat-label">{fact.label}</p>
               </div>
             ))}
           </div>
@@ -103,9 +110,9 @@ export function Landing() {
 
         <hr className="hr" />
 
-        <section id="features" className="features">
-          <span className="eyebrow">Three commitments</span>
-          {COMMITMENTS.map((item) => (
+        <section id="why" className="features">
+          <span className="eyebrow">Why people use it</span>
+          {REASONS.map((item) => (
             <div className="feature" key={item.num}>
               <p className="t-display feature-num">{item.num}</p>
               <h2 className="t-display">{item.title}</h2>
@@ -116,9 +123,40 @@ export function Landing() {
 
         <hr className="hr" />
 
+        <section id="compare" className="compare">
+          <span className="eyebrow">How it compares</span>
+          <h2 className="t-display">Tilde and a typical cloud reader</h2>
+          <div className="compare-scroll">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th />
+                  <th>Tilde</th>
+                  <th>Typical cloud reader</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map(([label, tilde, other]) => (
+                  <tr key={label}>
+                    <td>{label}</td>
+                    <td className="compare-yes">{tilde}</td>
+                    <td className="compare-other">{other}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="compare-note">
+            Tilde is a web page, so there is nothing to install. Open it, add a few sites, and it
+            remembers them next time.
+          </p>
+        </section>
+
+        <hr className="hr" />
+
         <section id="keys" className="keys">
-          <span className="eyebrow">Hands on the keyboard</span>
-          <h2 className="t-display">Every action has one key</h2>
+          <span className="eyebrow">Built for the keyboard</span>
+          <h2 className="t-display">One key for everything</h2>
           <div className="keys-grid">
             {KEYS.map((group, index) => (
               <table className="table" key={index}>
@@ -139,19 +177,19 @@ export function Landing() {
       <section className="band">
         <div className="band-inner">
           <h3 className="t-display">
-            <span>Read less.</span>
-            <span>Finish it.</span>
+            <span>Start reading.</span>
+            <span>It takes a minute.</span>
           </h3>
           <div className="band-cta">
             <Link to="/app" className="btn btn-ghost">
-              Open Tilde — free, local, yours
+              Open Tilde — free, no account
             </Link>
           </div>
         </div>
       </section>
 
       <div className="wrap">
-        <footer>Tilde — an RSS reader that ends.</footer>
+        <footer>Tilde — a calm reader for the sites you choose.</footer>
       </div>
     </div>
   )

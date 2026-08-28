@@ -451,6 +451,83 @@ a.btn-ghost:hover { color: var(--color-accent); }
   color: color-mix(in srgb, var(--color-text) 78%, transparent);
 }
 
+/* ── first run: suggested sources ───────────────────────────────────────── */
+
+.welcome-col {
+  grid-column: 2 / span 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.welcome-col .settings-body { max-width: 720px; }
+.welcome-go { margin-left: auto; }
+
+.welcome-intro { margin-bottom: 24px; }
+
+.welcome-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-bottom: 28px;
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.read-empty-cta { margin: 28px 0 0; }
+
+.suggest { margin-top: 32px; }
+
+.suggest-group + .suggest-group { margin-top: 32px; }
+
+.suggest-group-name {
+  display: block;
+  color: var(--color-accent-700);
+  margin-bottom: 6px;
+}
+
+.suggest-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+.suggest-row:last-child { border-bottom: 0; }
+
+.suggest-text {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.suggest-name {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.suggest-note {
+  font-size: 13px;
+  line-height: 22px;
+  color: var(--color-neutral-700);
+}
+
+.suggest-btn { flex: 0 0 auto; }
+
+.suggest-done {
+  font-size: 15px;
+  line-height: 26px;
+  margin: 0;
+  max-width: 56ch;
+  color: color-mix(in srgb, var(--color-text) 78%, transparent);
+}
+
+.suggest.is-compact { margin-top: 0; }
+.suggest.is-compact .suggest-group + .suggest-group { margin-top: 24px; }
+
 /* ── article prose ──────────────────────────────────────────────────────── */
 
 .prose {
@@ -790,6 +867,7 @@ a.btn-ghost:hover { color: var(--color-accent); }
   .list-col { border-right: 0; border-bottom: 2px solid var(--color-divider); }
   .rail-feeds { max-height: 220px; }
   .list-body { max-height: 60vh; }
-  .settings-col { grid-column: 1; }
+  .settings-col,
+  .welcome-col { grid-column: 1; }
   .list-foot { display: none; }
 }

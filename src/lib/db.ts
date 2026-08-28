@@ -1,5 +1,8 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
+import { htmlToText } from './sanitize'
 import { DEFAULT_SETTINGS, type Article, type Feed, type Settings } from './types'
+
+const DB_VERSION = 2
 
 interface TildeDB extends DBSchema {
   feeds: {
@@ -21,13 +24,27 @@ let dbPromise: Promise<IDBPDatabase<TildeDB>> | null = null
 
 function db() {
   if (!dbPromise) {
-    dbPromise = openDB<TildeDB>('tilde', 1, {
-      upgrade(database) {
-        database.createObjectStore('feeds', { keyPath: 'id' })
-        const articles = database.createObjectStore('articles', { keyPath: 'id' })
-        articles.createIndex('by-feed', 'feedId')
-        articles.createIndex('by-date', 'publishedAt')
-        database.createObjectStore('meta')
+    dbPromise = openDB<TildeDB>('tilde', DB_VERSION, {
+      async upgrade(database, oldVersion, _newVersion, tx) {
+        if (oldVersion < 1) {
+          database.createObjectStore('feeds', { keyPath: 'id' })
+          const articles = database.createObjectStore('articles', { keyPath: 'id' })
+          articles.createIndex('by-feed', 'feedId')
+          articles.createIndex('by-date', 'publishedAt')
+          database.createObjectStore('meta')
+        }
+        if (oldVersion === 1) {
+          // v2 added contentText. Backfill it so search stops matching markup
+          // on articles that were stored before the field existed.
+          let cursor = await tx.objectStore('articles').openCursor()
+          while (cursor) {
+            const article = cursor.value as Article
+            if (article.contentText === undefined) {
+              await cursor.update({ ...article, contentText: htmlToText(article.contentHtml) })
+            }
+            cursor = await cursor.continue()
+          }
+        }
       },
     })
   }
@@ -95,8 +112,8 @@ export async function dropArchivedBodies(): Promise<void> {
   let cursor = await tx.store.openCursor()
   const writes: Promise<unknown>[] = []
   while (cursor) {
-    if (cursor.value.contentHtml) {
-      writes.push(cursor.update({ ...cursor.value, contentHtml: '' }))
+    if (cursor.value.contentHtml || cursor.value.contentText) {
+      writes.push(cursor.update({ ...cursor.value, contentHtml: '', contentText: '' }))
     }
     cursor = await cursor.continue()
   }
