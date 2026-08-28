@@ -50,7 +50,15 @@ npx vercel            # preview
 npx vercel --prod     # production
 ```
 
-`vercel.json` sets the SPA rewrite (so `/app` resolves) and the function's timeout. Nothing else is configured, and there is nothing to provision — no database, no environment variables, no secrets.
+`vercel.json` sets the SPA rewrite (so `/app` resolves), the function's timeout, and two
+cache headers: `/sw.js` must revalidate every time, because a cached service worker cannot
+ship its own replacement, and the manifest gets a short cache. Nothing else is configured,
+and there is nothing to provision — no database, no environment variables, no secrets.
+
+One sharp edge: Vercel validates `vercel.json` against a strict schema and rejects any
+property it does not define, before the build even starts — a stray key fails the deploy
+with no build log to explain it. JSON has nowhere to put a comment, so notes about why a
+rule exists belong here rather than in the file.
 
 ---
 
