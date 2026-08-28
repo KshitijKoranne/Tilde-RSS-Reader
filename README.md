@@ -35,6 +35,11 @@ gone.
 **Nobody is watching.** No account to create, no analytics, no trackers, no server holding your
 reading list. Remote images are off by default, because images carry trackers.
 
+**You can read what the feed won't give you.** Some sites publish a sentence and a link; Hacker
+News publishes only the link. Press **Read the full article** and Tilde fetches the page and
+pulls the article out of it — the same reader mode your browser has, without leaving Tilde.
+Only when you ask, never on its own.
+
 **It is quick.** One key for everything, and it opens and reads with the network off.
 
 ---

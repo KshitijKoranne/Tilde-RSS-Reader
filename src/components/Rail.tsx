@@ -36,7 +36,7 @@ export function Rail() {
           </Link>
         )}
         <span className="kicker" style={{ color: 'var(--color-neutral-700)' }}>
-          v1.0
+          v1.1
         </span>
       </div>
 
