@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-ssr
+.vercel
+.DS_Store
+*.local
+*.log
+*.tsbuildinfo
+.claude/settings.local.json
+src-tauri/target
