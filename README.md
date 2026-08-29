@@ -25,12 +25,13 @@ looked, and once you have read it the list is empty and says so. The unread coun
 and only down. Nothing refills it to keep you busy.
 
 **You choose what shows up.** Paste any site's address — Tilde finds the feed itself — or bring
-your whole list from another reader as one OPML file. Your feeds are never reordered and
-nothing is ever slipped in.
+your whole list from another reader as one OPML file, folders and all. Your feeds are never
+reordered and nothing is ever slipped in.
 
 **You can find it again.** Every article you open is kept in full, on your own machine. Search a
 half-remembered phrase months later and it is still there, even if the site that published it is
-gone.
+gone — and it comes back as fast in year three as it did in week one, because Tilde searches an
+index of your archive rather than reading the whole thing.
 
 **Nobody is watching.** No account to create, no analytics, no trackers, no server holding your
 reading list. Remote images are off by default, because images carry trackers.
@@ -91,8 +92,17 @@ press **Open Anyway**. Once, not every launch.
 News, Technology, Science, Programming and Writing — and makes zero network requests until
 you choose one.
 
+**Sources can live in groups.** Give a source a group in Settings and it folds up under that
+name in the sidebar, with its own unread count; click the name to read just that group. Groups
+are only ever a name a source carries, so there is nothing to create, order or tidy up.
+
 **Your feeds are yours.** OPML in and out from Settings, the same format every other reader
-speaks. Nothing locks you in.
+speaks — including the folders, which arrive as groups and leave as folders again. Nothing
+locks you in.
+
+**You decide how much is kept.** The archive keeps everything by default. If you would rather
+it did not grow forever, Settings will let go of articles past three months, six months or a
+year — once you have read them. Anything you saved stays, whatever its age.
 
 **Web and Mac don't sync.** There's no account to tie them together and no server holding your
 list — that's the point. Move feeds across with OPML. Read state and the local archive stay per
@@ -111,6 +121,13 @@ React and TypeScript, no framework beyond the router. Feeds are parsed in the cl
 Atom 1.0 and RDF — and passed through an allowlist sanitiser before anything is rendered, so
 hostile markup in a feed never reaches the page. Articles and settings live in IndexedDB.
 
+The archive is arranged for the fact that it only grows. Article records are small and are held
+in memory all at once; their text is kept in a table of its own and read when you open one. Every
+article's text is reduced to its terms as it is stored, so searching reads an index of the words
+you asked for rather than a year of reading — a phrase is then confirmed against the few
+likeliest articles, which is why searching for *the long now* does not return everything
+containing *the*.
+
 The web build has exactly one piece of server code: `api/feed.js`, a byte proxy that exists only
 because CORS forbids the direct request. It keeps no log. The Mac build is the same bundle
 inside a [Tauri 2](https://tauri.app) window, where four Rust commands replace that proxy
@@ -121,6 +138,11 @@ Verified against reality rather than assumed: all 18 suggested feeds fetched and
 the sanitiser held against ten hostile inputs; the proxy refuses `localhost`, link-local and
 private address ranges; 66 end-to-end browser assertions including offline boot and a first run
 that makes zero network requests.
+
+`npm test` runs the suite — 140 tests over the parsing, sanitising and storage layer, which is
+where input from the open web arrives and where your archive lives. It covers the sanitiser
+against hostile markup, all three feed formats, OPML round trips, the search index, and the
+upgrade that moves an existing archive to the current storage layout without losing an article.
 
 Built from the [Claude Design](https://claude.ai/design/p/680e868d-d6bc-45da-974f-39fdf18818bb)
 project *Tilde RSS reader design*.

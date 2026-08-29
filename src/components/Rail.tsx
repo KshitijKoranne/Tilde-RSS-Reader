@@ -2,13 +2,68 @@ import { Link } from 'react-router-dom'
 import { hostOf } from '../lib/format'
 import { isDesktopApp } from '../lib/platform'
 import { useStore } from '../lib/store'
-import type { View } from '../lib/types'
+import type { Feed, View } from '../lib/types'
 import { Brand } from './Wordmark'
 
 interface NavDef {
   key: View
   label: string
   count: string | number
+}
+
+/* One source. The same row whether it sits in a group or on its own — a group
+ * indents its members rather than dressing them differently. */
+function FeedRow({ feed, inGroup }: { feed: Feed; inGroup: boolean }) {
+  const store = useStore()
+  const active = store.feedId === feed.id
+
+  return (
+    <button
+      type="button"
+      className={`side-item${inGroup ? ' is-nested' : ''}${active ? ' is-active' : ''}${
+        feed.lastError ? ' is-erroring' : ''
+      }`}
+      title={feed.lastError ? `${feed.title} — ${feed.lastError}` : hostOf(feed.url)}
+      onClick={() => store.go('inbox', active ? null : feed.id)}
+    >
+      <span className="side-label">{feed.title}</span>
+      <span className="side-count">
+        {feed.lastError ? '!' : (store.unreadByFeed.get(feed.id) ?? 0)}
+      </span>
+    </button>
+  )
+}
+
+/* A group heading is two controls in one row: the triangle folds it, the name
+ * reads everything inside it. Folding is not the same gesture as reading, so
+ * they are separate buttons rather than one that guesses. */
+function GroupHeading({ name }: { name: string }) {
+  const store = useStore()
+  const collapsed = store.settings.collapsedGroups.includes(name)
+  const active = store.groupName === name
+
+  return (
+    <div className={`group-head${active ? ' is-active' : ''}`}>
+      <button
+        type="button"
+        className="group-fold"
+        aria-expanded={!collapsed}
+        aria-label={`${collapsed ? 'Expand' : 'Collapse'} ${name}`}
+        onClick={() => store.toggleGroup(name)}
+      >
+        <span aria-hidden="true">{collapsed ? '▸' : '▾'}</span>
+      </button>
+      <button
+        type="button"
+        className="group-name"
+        aria-current={active ? 'page' : undefined}
+        onClick={() => store.go('inbox', null, active ? null : name)}
+      >
+        <span className="side-label">{name}</span>
+        <span className="side-count">{store.unreadByGroup.get(name) ?? 0}</span>
+      </button>
+    </div>
+  )
 }
 
 export function Rail() {
@@ -36,13 +91,15 @@ export function Rail() {
           </Link>
         )}
         <span className="kicker" style={{ color: 'var(--color-neutral-700)' }}>
-          v1.1
+          v1.2
         </span>
       </div>
 
       <nav className="rail-nav">
         {navItems.map((item) => {
-          const active = store.view === item.key && !(item.key === 'inbox' && store.feedId)
+          const active =
+            store.view === item.key &&
+            !(item.key === 'inbox' && (store.feedId || store.groupName))
           return (
             <button
               key={item.key}
@@ -74,23 +131,18 @@ export function Rail() {
         {store.feeds.length === 0 && (
           <p className="rail-empty">No sources yet. Add one below.</p>
         )}
-        {store.feeds.map((feed) => {
-          const active = store.feedId === feed.id
-          return (
-            <button
-              key={feed.id}
-              type="button"
-              className={`side-item${active ? ' is-active' : ''}${feed.lastError ? ' is-erroring' : ''}`}
-              title={feed.lastError ? `${feed.title} — ${feed.lastError}` : hostOf(feed.url)}
-              onClick={() => store.go('inbox', active ? null : feed.id)}
-            >
-              <span className="side-label">{feed.title}</span>
-              <span className="side-count">
-                {feed.lastError ? '!' : (store.unreadByFeed.get(feed.id) ?? 0)}
-              </span>
-            </button>
-          )
-        })}
+
+        {store.groups.map((group) =>
+          group.name ? (
+            <div className="rail-group" key={group.name}>
+              <GroupHeading name={group.name} />
+              {!store.settings.collapsedGroups.includes(group.name) &&
+                group.feeds.map((feed) => <FeedRow key={feed.id} feed={feed} inGroup />)}
+            </div>
+          ) : (
+            group.feeds.map((feed) => <FeedRow key={feed.id} feed={feed} inGroup={false} />)
+          ),
+        )}
       </div>
 
       <div className="rail-foot">

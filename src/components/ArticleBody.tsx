@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { looksThin } from '../lib/extract'
+import { isThin } from '../lib/extract'
+import { useArticleBody } from '../lib/hooks'
 import { sanitizeHtml } from '../lib/sanitize'
 import { useStore } from '../lib/store'
 import type { Article } from '../lib/types'
@@ -48,20 +49,27 @@ function FetchFullText({ article }: { article: Article }) {
 }
 
 /* Article HTML is re-sanitised here, at render time rather than at fetch time,
- * so flipping "Load remote images" takes effect on what is already on disk. */
+ * so flipping "Load remote images" takes effect on what is already on disk.
+ *
+ * The text itself is not part of the article record — it is read from disk as
+ * the article is opened, which is what keeps a ten-thousand-article archive
+ * from being loaded into memory to show one page of it. */
 export function ArticleBody({ article }: { article: Article }) {
   const { settings } = useStore()
+  const { body, loading } = useArticleBody(article)
 
   const { html, imagesStripped } = useMemo(
     () =>
-      sanitizeHtml(article.contentHtml, {
+      sanitizeHtml(body?.html ?? '', {
         baseUrl: article.link,
         allowImages: settings.loadImages,
       }),
-    [article.contentHtml, article.link, settings.loadImages],
+    [body?.html, article.link, settings.loadImages],
   )
 
-  const thin = looksThin(article.contentHtml)
+  // Nothing at all is better than a flash of "this feed publishes titles only"
+  // in front of an article that is about to appear.
+  if (loading) return <div className="prose" aria-busy="true" />
 
   if (!html) {
     return (
@@ -81,7 +89,7 @@ export function ArticleBody({ article }: { article: Article }) {
     <>
       <div className="prose" dangerouslySetInnerHTML={{ __html: html }} />
       {imagesStripped && <p className="prose-stripped">Images hidden — turn them on in Settings</p>}
-      {thin && <FetchFullText article={article} />}
+      {isThin(article.bodyChars) && <FetchFullText article={article} />}
     </>
   )
 }

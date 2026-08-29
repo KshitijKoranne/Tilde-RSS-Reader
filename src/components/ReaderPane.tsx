@@ -32,10 +32,16 @@ function EmptyState() {
   let note: ReactNode
 
   if (store.view === 'search') {
-    title = store.query.trim() ? 'No matches' : 'Search the archive'
-    note = store.query.trim()
-      ? 'Try a fragment of a sentence instead of a title.'
-      : 'Every article you have opened is kept in full text. Type a phrase you half remember.'
+    if (!store.query.trim()) {
+      title = 'Search the archive'
+      note = 'Every article you have opened is kept in full text. Type a phrase you half remember.'
+    } else if (store.searching) {
+      title = 'Searching'
+      note = 'Looking through everything you have read.'
+    } else {
+      title = 'No matches'
+      note = 'Try a fragment of a sentence instead of a title.'
+    }
   } else if (store.view === 'saved') {
     title = 'Nothing saved yet'
     note = 'Press s on any article to keep it here.'
@@ -48,12 +54,11 @@ function EmptyState() {
     )
   } else {
     const feed = store.feeds.find((f) => f.id === store.feedId)
+    const where = feed?.title ?? store.groupName ?? `all ${store.feeds.length} sources`
     title = 'All caught up'
     note = (
       <>
-        You have read everything from{' '}
-        {feed ? feed.title : `all ${store.feeds.length} sources`}. <Tilde /> will not invent more.
-        Come back tomorrow.
+        You have read everything from {where}. <Tilde /> will not invent more. Come back tomorrow.
       </>
     )
   }

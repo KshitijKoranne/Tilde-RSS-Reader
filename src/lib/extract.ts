@@ -28,9 +28,10 @@ export interface ExtractedArticle {
  *  "Comments" link, an empty paragraph, a one-line summary. */
 const THIN = 400
 
-/** Whether the button is worth offering for this article at all. */
-export function looksThin(contentHtml: string): boolean {
-  return htmlToText(contentHtml).length < THIN
+/** Whether the button is worth offering for this article at all. The length of
+ *  the stored text is enough to tell, and is known without reading it. */
+export function isThin(bodyChars: number): boolean {
+  return bodyChars < THIN
 }
 
 function isHtml(contentType: string, text: string): boolean {

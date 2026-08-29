@@ -8,15 +8,27 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { forgetHaystacks, searchArchive } from './archive'
+import { forgetBodies, rememberBody } from './bodies'
 import * as db from './db'
 import { extractArticle } from './extract'
-import { makeFeed, refreshFeed, resolveFeed, toArticles } from './feeds'
+import { groupFeeds, makeFeed, refreshFeeds, resolveFeed, toArticles, type FeedGroup } from './feeds'
 import { writeGlance } from './glance'
 import { downloadOpml, parseOpml } from './opml'
-import { DEFAULT_SETTINGS, type Article, type Feed, type Settings, type View } from './types'
+import {
+  DEFAULT_SETTINGS,
+  RETENTION_DAYS,
+  type Article,
+  type Feed,
+  type Settings,
+  type View,
+} from './types'
 
-const REFRESH_CONCURRENCY = 4
 const AUTO_REFRESH_MS = 15 * 60 * 1000
+
+/* Search waits this long after the last keystroke. Long enough that typing a
+ * word costs one search rather than five, short enough to feel like none. */
+const SEARCH_DEBOUNCE_MS = 120
 
 export interface Toast {
   message: string
@@ -30,12 +42,17 @@ interface TildeStore {
   settings: Settings
 
   view: View
+  /** feedId and groupName are the two ways to narrow the inbox and are
+   *  mutually exclusive; go() is the only thing that sets either. */
   feedId: string | null
+  groupName: string | null
   query: string
   selectedId: string | null
   showAdd: boolean
   zen: boolean
   refreshing: boolean
+  /** True while the archive is being searched, which is not instant on a big one. */
+  searching: boolean
   busy: boolean
   toast: Toast | null
 
@@ -45,8 +62,11 @@ interface TildeStore {
   unreadCount: number
   savedCount: number
   unreadByFeed: Map<string, number>
+  /** The rail's shape: named groups, then whatever belongs to no group. */
+  groups: FeedGroup[]
+  unreadByGroup: Map<string, number>
 
-  go(view: View, feedId?: string | null): void
+  go(view: View, feedId?: string | null, groupName?: string | null): void
   step(delta: number): void
   open(id: string): void
   setQuery(query: string): void
@@ -58,8 +78,11 @@ interface TildeStore {
    *  so the caller can show the reason where the reader is looking. */
   loadFullText(id: string): Promise<void>
 
-  addFeed(input: string): Promise<void>
+  addFeed(input: string, group?: string): Promise<void>
   removeFeed(id: string): Promise<void>
+  /** Moves a source to a group, or out of one when given an empty name. */
+  setFeedGroup(id: string, group: string): Promise<void>
+  toggleGroup(name: string): void
   refreshAll(): Promise<void>
   importOpml(text: string): Promise<void>
   exportOpml(): void
@@ -72,25 +95,6 @@ interface TildeStore {
 
 const StoreContext = createContext<TildeStore | null>(null)
 
-function messageOf(error: unknown, fallback: string): string {
-  return error instanceof Error && error.message ? error.message : fallback
-}
-
-/** Runs tasks with a cap, so refreshing twenty feeds does not open twenty
- *  sockets at once. Never rejects — each result carries its own outcome. */
-async function pool<T, R>(items: T[], limit: number, run: (item: T) => Promise<R>): Promise<R[]> {
-  const results = new Array<R>(items.length)
-  let cursor = 0
-  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (cursor < items.length) {
-      const index = cursor++
-      results[index] = await run(items[index])
-    }
-  })
-  await Promise.all(workers)
-  return results
-}
-
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false)
   const [feeds, setFeeds] = useState<Feed[]>([])
@@ -99,11 +103,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const [view, setView] = useState<View>('inbox')
   const [feedId, setFeedId] = useState<string | null>(null)
+  const [groupName, setGroupName] = useState<string | null>(null)
   const [query, setQueryState] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [zen, setZen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [searching, setSearching] = useState(false)
+  const [searchIds, setSearchIds] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState<Toast | null>(null)
 
@@ -128,6 +135,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
    * This ref is updated synchronously by removeFeed, so ingest can drop
    * results that arrive for a source the user has already let go of. */
   const removed = useRef<Set<string>>(new Set())
+
+  /* The search index refers to articles by a small number rather than by their
+   * id, so something has to hand those out. The highest one on disk is the only
+   * state it needs — no counter to keep in step, and nothing to go wrong if a
+   * write is lost. */
+  const seq = useRef(1)
+  const nextSeq = useCallback(() => seq.current++, [])
 
   /* ── persistence ─────────────────────────────────────────────────────── */
 
@@ -157,34 +171,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const existing = new Map(latest.current.articles.map((a) => [a.id, a]))
       const keepArchive = latest.current.settings.keepArchive
 
-      const outcomes = await pool(targets, REFRESH_CONCURRENCY, async (feed) => {
-        try {
-          const parsed = await refreshFeed(feed)
-          // A refresh never renames a source you already see in the rail. The
-          // remote title only fills in when there is nothing better, so an OPML
-          // row imported without a title gets one and nothing else changes.
-          const named = feed.title && feed.title !== feed.url
-          const title = named ? feed.title : parsed.title || feed.title || feed.url
-          const updated = {
-            ...feed,
-            title,
-            siteUrl: parsed.siteUrl || feed.siteUrl,
-            lastFetchedAt: Date.now(),
-            lastError: '',
-          }
-          return { feed: updated, fresh: toArticles(updated, parsed, { keepArchive, existing }) }
-        } catch (error) {
-          return {
-            feed: { ...feed, lastFetchedAt: Date.now(), lastError: messageOf(error, 'Could not reach this source.') },
-            fresh: [] as Article[],
-          }
-        }
-      })
+      const outcomes = await refreshFeeds(targets, { keepArchive, existing, nextSeq })
 
+      /* Anything the reader unsubscribed from while this was in flight is
+       * dropped here rather than written back: without it, letting a source go
+       * mid-refresh would resurrect it and its articles a moment later. */
       const nextFeeds = outcomes.map((o) => o.feed).filter((f) => !removed.current.has(f.id))
-      const fresh = outcomes
+      const incoming = outcomes
         .flatMap((o) => o.fresh)
-        .filter((a) => !removed.current.has(a.feedId))
+        .filter((i) => !removed.current.has(i.article.feedId))
+      const fresh = incoming.map((i) => i.article)
       if (!nextFeeds.length && !fresh.length) return
 
       setFeeds((current) => {
@@ -198,7 +194,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       })
 
       await db.saveFeeds(nextFeeds)
-      await db.saveArticles(fresh)
+      await db.saveIncoming(incoming)
 
       const failed = nextFeeds.filter((f) => f.lastError)
       if (failed.length) {
@@ -210,7 +206,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         )
       }
     },
-    [notify],
+    [notify, nextSeq],
   )
 
   const refreshAll = useCallback(async () => {
@@ -222,6 +218,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setRefreshing(false)
     }
   }, [ingest])
+
+  /* ── forgetting ──────────────────────────────────────────────────────── */
+
+  /* Retention. Off unless it was asked for, and even then it only lets go of
+   * articles that have been read and not saved — the archive you were promised
+   * stays an archive. */
+  const prune = useCallback(async (retention: Settings['retention']) => {
+    const days = RETENTION_DAYS[retention]
+    if (!days) return
+    const gone = await db.pruneArticles(Date.now() - days * 86_400_000)
+    if (!gone.length) return
+
+    const dropped = new Set(gone)
+    forgetHaystacks(gone)
+    setArticles((list) => list.filter((a) => !dropped.has(a.id)))
+  }, [])
 
   /* ── boot ────────────────────────────────────────────────────────────── */
 
@@ -243,6 +255,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setFeeds(storedFeeds)
       if (!storedFeeds.length) setView('welcome')
       latest.current = { feeds: storedFeeds, articles: storedArticles, settings: storedSettings }
+      // Carry on numbering from the highest article on disk, so a new one can
+      // never be given a number the index already means something else by.
+      seq.current = storedArticles.reduce((n, a) => Math.max(n, a.seq ?? 0), 0) + 1
       setReady(true)
 
       if (storedFeeds.length) {
@@ -253,37 +268,75 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           if (!cancelled) setRefreshing(false)
         }
       }
+
+      // Once, after the reader already has something to look at.
+      if (!cancelled) await prune(storedSettings.retention)
     })()
 
     return () => {
       cancelled = true
     }
-  }, [ingest])
+  }, [ingest, prune])
 
   useEffect(() => {
     const timer = window.setInterval(() => void refreshAll(), AUTO_REFRESH_MS)
     return () => window.clearInterval(timer)
   }, [refreshAll])
 
+  /* ── search ──────────────────────────────────────────────────────────── */
+
+  /* Re-run on the query alone. Marking an article read while looking at results
+   * changes the article list, and re-searching on that would shuffle the page
+   * out from under the person reading it. */
+  useEffect(() => {
+    if (view !== 'search') return
+    if (!query.trim()) {
+      setSearchIds([])
+      setSearching(false)
+      return
+    }
+
+    let current = true
+    setSearching(true)
+    const timer = window.setTimeout(() => {
+      void searchArchive(latest.current.articles, query).then((ids) => {
+        if (!current) return
+        setSearchIds(ids)
+        setSearching(false)
+      })
+    }, SEARCH_DEBOUNCE_MS)
+
+    return () => {
+      current = false
+      window.clearTimeout(timer)
+    }
+  }, [view, query])
+
   /* ── derived list ────────────────────────────────────────────────────── */
+
+  const byId = useMemo(() => new Map(articles.map((a) => [a.id, a])), [articles])
 
   const visible = useMemo(() => {
     if (view === 'saved') return articles.filter((a) => a.starred)
+    // Search holds ids rather than the articles it found, so a row it is
+    // showing still notices when you mark it read.
     if (view === 'search') {
-      const needle = query.trim().toLowerCase()
-      if (!needle) return []
-      // contentText, never contentHtml — searching the markup would match tag
-      // names and href values, and would miss any phrase split by a tag.
-      return articles.filter((a) =>
-        `${a.title} ${a.feedTitle} ${a.author} ${a.excerpt} ${a.contentText ?? ''}`
-          .toLowerCase()
-          .includes(needle),
-      )
+      return searchIds.map((id) => byId.get(id)).filter((a): a is Article => Boolean(a))
     }
+    // A group narrows the inbox to the sources inside it, the same way a
+    // single source does — one level up.
+    const inGroup =
+      groupName === null
+        ? null
+        : new Set(feeds.filter((f) => f.group === groupName).map((f) => f.id))
+
     return articles.filter(
-      (a) => (!a.read || sticky.has(a.id)) && (!feedId || a.feedId === feedId),
+      (a) =>
+        (!a.read || sticky.has(a.id)) &&
+        (!feedId || a.feedId === feedId) &&
+        (!inGroup || inGroup.has(a.feedId)),
     )
-  }, [articles, view, query, feedId, sticky])
+  }, [articles, byId, searchIds, view, feedId, groupName, feeds, sticky])
 
   const selected = useMemo(
     () => visible.find((a) => a.id === selectedId) ?? visible[0] ?? null,
@@ -308,11 +361,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return counts
   }, [articles])
 
+  const groups = useMemo(() => groupFeeds(feeds), [feeds])
+
+  // A folded group still has to show what is waiting inside it.
+  const unreadByGroup = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const feed of feeds) {
+      if (!feed.group) continue
+      counts.set(feed.group, (counts.get(feed.group) ?? 0) + (unreadByFeed.get(feed.id) ?? 0))
+    }
+    return counts
+  }, [feeds, unreadByFeed])
+
   /* ── actions ─────────────────────────────────────────────────────────── */
 
-  const go = useCallback((nextView: View, nextFeedId: string | null = null) => {
+  const go = useCallback((
+    nextView: View,
+    nextFeedId: string | null = null,
+    nextGroup: string | null = null,
+  ) => {
     setView(nextView)
     setFeedId(nextFeedId)
+    setGroupName(nextGroup)
     setSelectedId(null)
     setSticky(new Set())
     setZen(false)
@@ -365,19 +435,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const article = latest.current.articles.find((a) => a.id === id)
       if (!article?.link) throw new Error('This article has no link to follow.')
 
-      const { html, text } = await extractArticle(article.link)
+      const extracted = await extractArticle(article.link)
+      const body = { id, html: extracted.html, text: extracted.text }
+      const updated = { ...article, bodyChars: body.text.length }
+
+      // Held either way, so the reader shows it the moment this returns.
+      rememberBody(body)
+      setArticles((list) => list.map((a) => (a.id === id ? updated : a)))
 
       // The archive setting governs what is kept on disk, so honour it here
       // too: with it off, the text is shown now and not written down.
-      if (latest.current.settings.keepArchive) {
-        mutateArticle(id, (a) => ({ ...a, contentHtml: html, contentText: text }))
-      } else {
-        setArticles((list) =>
-          list.map((a) => (a.id === id ? { ...a, contentHtml: html, contentText: text } : a)),
-        )
-      }
+      if (latest.current.settings.keepArchive) await db.saveBody(updated, body)
     },
-    [mutateArticle],
+    [],
   )
 
   const markAllRead = useCallback(() => {
@@ -396,7 +466,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [visible, persistArticles])
 
   const addFeed = useCallback(
-    async (input: string) => {
+    async (input: string, group = '') => {
       setBusy(true)
       try {
         const { url, parsed } = await resolveFeed(input)
@@ -405,24 +475,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           return
         }
         removed.current.delete(url)
-        const feed = makeFeed(url, parsed)
-        const fresh = toArticles(feed, parsed, {
+        const feed = makeFeed(url, parsed, group)
+        const incoming = toArticles(feed, parsed, {
           keepArchive: latest.current.settings.keepArchive,
           existing: new Map(),
+          nextSeq,
         })
+        const fresh = incoming.map((i) => i.article)
 
         setFeeds((current) => [...current, feed].sort((a, b) => a.title.localeCompare(b.title)))
         setArticles((current) =>
           [...fresh, ...current].sort((a, b) => b.publishedAt - a.publishedAt),
         )
         await db.saveFeed(feed)
-        await db.saveArticles(fresh)
+        await db.saveIncoming(incoming)
         notify(`Following ${feed.title}.`)
       } finally {
         setBusy(false)
       }
     },
-    [notify],
+    [notify, nextSeq],
   )
 
   const removeFeed = useCallback(
@@ -432,6 +504,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setFeeds((current) => current.filter((f) => f.id !== id))
       setArticles((current) => current.filter((a) => a.feedId !== id))
       setFeedId((current) => (current === id ? null : current))
+      // Letting go of the last source in a group leaves that group nowhere to
+      // point, so step back out to everything unread.
+      if (feed?.group && !latest.current.feeds.some((f) => f.id !== id && f.group === feed.group)) {
+        setGroupName((current) => (current === feed.group ? null : current))
+      }
       // Dropping the last source lands you back where you started, rather than
       // on an empty list with no way to find the suggestions again.
       if (latest.current.feeds.length <= 1) setView('welcome')
@@ -440,6 +517,34 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     [notify],
   )
+
+  const setFeedGroup = useCallback(
+    async (id: string, group: string) => {
+      const trimmed = group.trim()
+      const feed = latest.current.feeds.find((f) => f.id === id)
+      if (!feed || feed.group === trimmed) return
+      const updated = { ...feed, group: trimmed }
+      setFeeds((current) => current.map((f) => (f.id === id ? updated : f)))
+      // Looking at a group you have just emptied would show nothing at all.
+      setGroupName((current) => (current === feed.group ? null : current))
+      await db.saveFeed(updated)
+    },
+    [],
+  )
+
+  const toggleGroup = useCallback((name: string) => {
+    setSettings((current) => {
+      const folded = current.collapsedGroups.includes(name)
+      const next = {
+        ...current,
+        collapsedGroups: folded
+          ? current.collapsedGroups.filter((g) => g !== name)
+          : [...current.collapsedGroups, name],
+      }
+      void db.saveSettings(next)
+      return next
+    })
+  }, [])
 
   const importOpml = useCallback(
     async (text: string) => {
@@ -460,6 +565,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           siteUrl: '',
           title: entry.title || entry.url,
           addedAt: Date.now(),
+          // The folder the feed sat in wherever it came from. OPML carries it,
+          // so a list that arrives organised stays organised.
+          group: entry.group,
           lastFetchedAt: 0,
           lastError: '',
         }))
@@ -490,20 +598,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       void db.saveSettings(next)
       // Honour the archive switch immediately rather than at the next refresh.
       if (patch.keepArchive === false && current.keepArchive) {
+        forgetBodies()
         void db.dropArchivedBodies()
-        setArticles((list) => list.map((a) => (a.contentHtml ? { ...a, contentHtml: '' } : a)))
+        setArticles((list) => list.map((a) => (a.bodyChars ? { ...a, bodyChars: 0 } : a)))
       }
       return next
     })
-  }, [])
+    // A shorter retention is a request to forget now, not at the next launch.
+    if (patch.retention) void prune(patch.retention)
+  }, [prune])
 
   const value: TildeStore = {
     ready, feeds, articles, settings,
-    view, feedId, query, selectedId, showAdd, zen, refreshing, busy, toast,
-    visible, selected, unreadCount, savedCount, unreadByFeed,
+    view, feedId, groupName, query, selectedId, showAdd, zen, refreshing, searching, busy, toast,
+    visible, selected, unreadCount, savedCount, unreadByFeed, groups, unreadByGroup,
     go, step, open, setQuery,
     setRead, toggleStar, markAllRead, loadFullText,
-    addFeed, removeFeed, refreshAll, importOpml, exportOpml,
+    addFeed, removeFeed, setFeedGroup, toggleGroup, refreshAll, importOpml, exportOpml,
     update, setShowAdd, setZen, notify,
   }
 

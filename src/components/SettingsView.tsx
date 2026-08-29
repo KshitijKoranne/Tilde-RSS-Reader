@@ -1,8 +1,16 @@
-import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { groupNames } from '../lib/feeds'
 import { hostOf } from '../lib/format'
 import { isDesktopApp, pickTextFile } from '../lib/platform'
 import { useStore } from '../lib/store'
-import type { ListDensity, ReaderFont, ReaderSize, Settings } from '../lib/types'
+import type {
+  Feed,
+  ListDensity,
+  ReaderFont,
+  ReaderSize,
+  Retention,
+  Settings,
+} from '../lib/types'
 import { Suggestions } from './Suggestions'
 import { Tilde } from './Wordmark'
 
@@ -15,6 +23,7 @@ const FONT_NOTES: Record<ReaderFont, string> = {
 const FONTS: ReaderFont[] = ['Archivo', 'Newsreader', 'Plex Mono']
 const SIZES: ReaderSize[] = ['Small', 'Regular', 'Large']
 const DENSITIES: ListDensity[] = ['Comfortable', 'Compact']
+const RETENTIONS: Retention[] = ['Keep everything', '1 year', '6 months', '3 months']
 
 const TOGGLES: { key: keyof Settings; label: string; note: string }[] = [
   {
@@ -38,6 +47,55 @@ const TOGGLES: { key: keyof Settings; label: string; note: string }[] = [
     note: 'The row of key hints under the article list.',
   },
 ]
+
+/* One subscription. The group field is a plain text box backed by the names
+ * already in use: type to make a new group, pick to join an existing one, and
+ * clear it to move the source back out to the top level. There is nothing to
+ * create or delete separately, because a group is only ever the name its
+ * members carry. */
+function SubscriptionRow({ feed }: { feed: Feed }) {
+  const store = useStore()
+  const [group, setGroup] = useState(feed.group)
+
+  // A rename or an OPML import can change this underneath the field.
+  useEffect(() => setGroup(feed.group), [feed.group])
+
+  const commit = () => {
+    if (group.trim() !== feed.group) void store.setFeedGroup(feed.id, group)
+  }
+
+  return (
+    <div className="set-feed">
+      <span className="set-feed-name">{feed.title}</span>
+      <span className={`set-feed-url${feed.lastError ? ' set-feed-error' : ''}`}>
+        {feed.lastError || hostOf(feed.url)}
+      </span>
+      <input
+        className="input set-feed-group"
+        type="text"
+        list="set-group-names"
+        placeholder="No group"
+        aria-label={`Group for ${feed.title}`}
+        value={group}
+        onChange={(event) => setGroup(event.target.value)}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault()
+            event.currentTarget.blur()
+          }
+        }}
+      />
+      <button
+        type="button"
+        className="list-action"
+        onClick={() => void store.removeFeed(feed.id)}
+      >
+        Unsubscribe
+      </button>
+    </div>
+  )
+}
 
 export function SettingsView() {
   const store = useStore()
@@ -149,6 +207,28 @@ export function SettingsView() {
             </div>
           </div>
 
+          <div>
+            <label className="kicker set-label">Keep articles for</label>
+            <div className="seg">
+              {RETENTIONS.map((retention) => (
+                <button
+                  key={retention}
+                  type="button"
+                  className="seg-opt"
+                  aria-pressed={settings.retention === retention}
+                  onClick={() => store.update({ retention })}
+                >
+                  {retention}
+                </button>
+              ))}
+            </div>
+            <p className="set-note">
+              {settings.retention === 'Keep everything'
+                ? 'Nothing is ever thrown away. Search reaches back as far as you have been reading.'
+                : 'Articles older than this are let go once you have read them. Anything you saved is kept, whatever its age.'}
+            </p>
+          </div>
+
           {TOGGLES.map((toggle) => (
             <button
               key={toggle.key}
@@ -209,21 +289,19 @@ export function SettingsView() {
         <span className="kicker set-legend">
           {store.feeds.length} {store.feeds.length === 1 ? 'subscription' : 'subscriptions'}
         </span>
+        <datalist id="set-group-names">
+          {groupNames(store.feeds).map((name) => (
+            <option key={name} value={name} />
+          ))}
+        </datalist>
         <div className="set-feeds">
           {store.feeds.length === 0 && <p className="set-prose">Nothing yet.</p>}
-          {store.feeds.map((feed) => (
-            <div className="set-feed" key={feed.id}>
-              <span className="set-feed-name">{feed.title}</span>
-              <span className={`set-feed-url${feed.lastError ? ' set-feed-error' : ''}`}>
-                {feed.lastError || hostOf(feed.url)}
-              </span>
-              <button
-                type="button"
-                className="list-action"
-                onClick={() => void store.removeFeed(feed.id)}
-              >
-                Unsubscribe
-              </button>
+          {store.groups.map((group) => (
+            <div className="set-feed-group-block" key={group.name || '\u0000ungrouped'}>
+              {group.name && <span className="kicker set-group-name">{group.name}</span>}
+              {group.feeds.map((feed) => (
+                <SubscriptionRow key={feed.id} feed={feed} />
+              ))}
             </div>
           ))}
         </div>

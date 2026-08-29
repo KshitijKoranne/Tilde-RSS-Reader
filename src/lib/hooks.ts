@@ -1,6 +1,7 @@
-import { useEffect, type RefObject } from 'react'
+import { useEffect, useState, type RefObject } from 'react'
+import { peekBody, readBody } from './bodies'
 import { useStore } from './store'
-import type { Article } from './types'
+import type { Article, ArticleBody } from './types'
 
 /* "Mark read when scrolled past" — the reader only, never the list. Shared by
  * the reading pane and full-screen mode, which are the same reader in two
@@ -34,4 +35,44 @@ export function useScrollToTop(ref: RefObject<HTMLElement | null>, key: string |
   useEffect(() => {
     if (ref.current) ref.current.scrollTop = 0
   }, [ref, key])
+}
+
+export interface LoadedBody {
+  body: ArticleBody | null
+  loading: boolean
+}
+
+/* An article's text, read from disk when it is opened rather than held for
+ * every article at once. bodyChars is part of the key because fetching the
+ * full article replaces the text under an id that has not changed. */
+export function useArticleBody(article: Article | null): LoadedBody {
+  const id = article?.id ?? ''
+  const chars = article?.bodyChars ?? 0
+  const [state, setState] = useState<LoadedBody>(() => ({
+    body: peekBody(id),
+    loading: Boolean(chars) && !peekBody(id),
+  }))
+
+  useEffect(() => {
+    if (!id || !chars) {
+      setState({ body: null, loading: false })
+      return
+    }
+    const held = peekBody(id)
+    if (held) {
+      setState({ body: held, loading: false })
+      return
+    }
+
+    let current = true
+    setState({ body: null, loading: true })
+    void readBody(id).then((body) => {
+      if (current) setState({ body, loading: false })
+    })
+    return () => {
+      current = false
+    }
+  }, [id, chars])
+
+  return state
 }

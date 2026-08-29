@@ -3,7 +3,11 @@ import { useStore } from '../lib/store'
 import { SUGGESTED_GROUPS } from '../lib/suggested'
 
 /* Offered, never subscribed on your behalf. Anything already followed drops
- * out of the list, so it empties as you use it. */
+ * out of the list, so it empties as you use it.
+ *
+ * Subscribing carries the heading across: pick something under Science and it
+ * arrives in a Science group in the rail, so the shape you chose from is the
+ * shape you get back. */
 export function Suggestions({ compact = false }: { compact?: boolean }) {
   const store = useStore()
   const [pending, setPending] = useState<string | null>(null)
@@ -25,7 +29,7 @@ export function Suggestions({ compact = false }: { compact?: boolean }) {
     )
   }
 
-  const subscribe = async (url: string) => {
+  const subscribe = async (url: string, group: string) => {
     setPending(url)
     setFailed((current) => {
       const next = { ...current }
@@ -33,7 +37,7 @@ export function Suggestions({ compact = false }: { compact?: boolean }) {
       return next
     })
     try {
-      await store.addFeed(url)
+      await store.addFeed(url, group)
     } catch (error) {
       setFailed((current) => ({
         ...current,
@@ -58,7 +62,7 @@ export function Suggestions({ compact = false }: { compact?: boolean }) {
               <button
                 type="button"
                 className="btn btn-ghost suggest-btn"
-                onClick={() => void subscribe(feed.url)}
+                onClick={() => void subscribe(feed.url, group.name)}
                 disabled={pending !== null}
               >
                 {pending === feed.url ? 'Adding…' : 'Subscribe'}

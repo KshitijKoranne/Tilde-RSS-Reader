@@ -19,18 +19,32 @@ export function ArticleList() {
   const activeFeed = store.feeds.find((f) => f.id === store.feedId)
 
   const title =
-    view === 'saved' ? 'Saved' : view === 'search' ? 'Search' : (activeFeed?.title ?? 'Unread')
+    view === 'saved'
+      ? 'Saved'
+      : view === 'search'
+        ? 'Search'
+        : (activeFeed?.title ?? store.groupName ?? 'Unread')
+
+  // What "sources" means here depends on how far the list is narrowed: one
+  // feed, the feeds in a group, or everything.
+  const sourceCount = activeFeed
+    ? 1
+    : store.groupName
+      ? store.feeds.filter((f) => f.group === store.groupName).length
+      : store.feeds.length
 
   let meta: string
   if (view === 'saved') {
     meta = `${store.savedCount} kept for later`
   } else if (view === 'search') {
-    meta = store.query.trim()
-      ? `${plural(visible.length, 'match', 'matches')} in the archive`
-      : `${plural(store.articles.length, 'article', 'articles')} indexed`
+    meta = !store.query.trim()
+      ? `${plural(store.articles.length, 'article', 'articles')} indexed`
+      : store.searching
+        ? 'Searching…'
+        : `${plural(visible.length, 'match', 'matches')} in the archive`
   } else if (visible.length) {
     meta = `${plural(visible.length, 'article', 'articles')} · ${
-      activeFeed ? 'one source' : plural(store.feeds.length, 'source', 'sources')
+      sourceCount === 1 ? 'one source' : plural(sourceCount, 'source', 'sources')
     }`
   } else if (!store.feeds.length) {
     meta = 'No sources yet'
