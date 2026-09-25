@@ -8,6 +8,23 @@ import '../styles/landing.css'
 const REPO = 'https://github.com/KshitijKoranne/Tilde-RSS-Reader'
 const MAC_RELEASE = `${REPO}/releases/latest`
 
+/** Store-badge style download link. Generic laptop glyph: no Apple marks here,
+ *  the official Mac App Store badge goes next to it once the listing is live. */
+function MacDownload() {
+  return (
+    <a href={MAC_RELEASE} className="dl-badge" aria-label="Download Tilde for macOS">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+        <rect x="4" y="5" width="16" height="11" rx="1.5" />
+        <path d="M2 19h20" strokeLinecap="round" />
+      </svg>
+      <span className="dl-badge-text">
+        <small>Download for</small>
+        <strong>macOS</strong>
+      </span>
+    </a>
+  )
+}
+
 /* iPadOS reports itself as a Mac, so the touch count is the tiebreaker. It
  * only decides whether the hero offers the download — the section below always
  * does, because someone on a phone may well be choosing for their laptop. */
@@ -146,9 +163,7 @@ export function Landing() {
               </span>
             </Link>
             {mac ? (
-              <a href={MAC_RELEASE} className="btn btn-secondary">
-                <span className="btn-label">Download for Mac</span>
-              </a>
+              <MacDownload />
             ) : (
               <a href="#why" className="btn btn-secondary">
                 <span className="btn-label">How it works</span>
@@ -262,10 +277,7 @@ export function Landing() {
                 <li>Fetches every source directly — no proxy in the middle at all</li>
                 <li>Opens and reads with the network off, every time, not just when a cache agrees</li>
               </ul>
-              <a href={MAC_RELEASE} className="btn btn-primary">
-                <TildeMark size={16} />
-                <span className="btn-label">Download for Mac</span>
-              </a>
+              <MacDownload />
               <p className="choose-foot">
                 Free. One universal build for Apple silicon and Intel. macOS 10.15 or later.
               </p>
@@ -322,9 +334,7 @@ export function Landing() {
                 )}
               </span>
             </Link>
-            <a href={MAC_RELEASE} className="btn btn-ghost">
-              <span className="btn-label">Download for Mac</span>
-            </a>
+            <MacDownload />
           </div>
         </div>
       </section>
