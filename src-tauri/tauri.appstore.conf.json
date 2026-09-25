@@ -1,0 +1,15 @@
+{
+  "bundle": {
+    "copyright": "© 2026 Kshitij Koranne",
+    "macOS": {
+      "minimumSystemVersion": "12.0",
+      "bundleVersion": "1",
+      "signingIdentity": "Apple Distribution",
+      "entitlements": "./Entitlements.appstore.plist",
+      "infoPlist": "./Info.appstore.plist",
+      "files": {
+        "embedded.provisionprofile": "./embedded.provisionprofile"
+      }
+    }
+  }
+}

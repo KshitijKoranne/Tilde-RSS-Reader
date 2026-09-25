@@ -9,3 +9,7 @@ dist-ssr
 .claude/settings.local.json
 src-tauri/target
 src-tauri/gen
+
+# Mac App Store
+src-tauri/embedded.provisionprofile
+*.pkg

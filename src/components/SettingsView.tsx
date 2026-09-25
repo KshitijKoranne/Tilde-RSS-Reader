@@ -318,8 +318,9 @@ export function SettingsView() {
             There is no <Tilde /> account, no analytics, and nothing is stored on a server. The Mac
             app requests each source directly — nothing passes through this project's proxy, so
             there is not even a middle step that could keep a log. That index lives in{' '}
-            <code>~/Library/WebKit/in.kjrlabs.tilde</code>, which macOS keeps even after <Tilde /> is
-            moved to the Trash; delete that folder to remove everything.
+            <code>~/Library/Containers/in.kjrlabs.tilde</code> (App Store copy) or{' '}
+            <code>~/Library/WebKit/in.kjrlabs.tilde</code> (direct download), which macOS keeps even
+            after <Tilde /> is moved to the Trash; delete that folder to remove everything.
           </p>
         ) : (
           <p className="set-prose">
