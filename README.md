@@ -58,11 +58,6 @@ installed. Three things it does that the browser cannot:
 - **Older feeds read correctly.** It honours a feed's declared character set, so a decade-old
   blog arrives as words rather than question marks.
 
-### Signed and notarized
-
-The download is signed with a Developer ID and notarized by Apple, so it opens like any other
-Mac app. Drag Tilde to Applications and open it.
-
 ---
 
 ## Keyboard
