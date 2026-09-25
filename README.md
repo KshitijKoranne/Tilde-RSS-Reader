@@ -58,15 +58,10 @@ installed. Three things it does that the browser cannot:
 - **Older feeds read correctly.** It honours a feed's declared character set, so a decade-old
   blog arrives as words rather than question marks.
 
-### Opening it the first time
+### Signed and notarized
 
-Apple charges $99 a year for the account that signs Mac software. There isn't one behind Tilde,
-so macOS cannot tell you who built it and will warn you. **The warning is about a missing
-signature, not about anything the app does.**
-
-Drag Tilde to Applications, then **right-click it → Open**, and Open again. If macOS refuses
-outright, go to **System Settings → Privacy & Security**, scroll to the note about Tilde, and
-press **Open Anyway**. Once, not every launch.
+The download is signed with a Developer ID and notarized by Apple, so it opens like any other
+Mac app. Drag Tilde to Applications and open it.
 
 ---
 

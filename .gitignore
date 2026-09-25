@@ -14,3 +14,4 @@ src-tauri/gen
 src-tauri/embedded.provisionprofile
 *.pkg
 appstore/
+Claude outputs/

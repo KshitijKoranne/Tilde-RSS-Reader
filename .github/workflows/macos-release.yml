@@ -11,9 +11,9 @@
 
 name: macOS app
 
+# Releases are now built locally with `npm run mac:release` (signed + notarized).
+# This job stays as a manual, unsigned build check.
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
 
 jobs:

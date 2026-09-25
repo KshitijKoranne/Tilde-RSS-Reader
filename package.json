@@ -13,7 +13,8 @@
     "tauri": "tauri",
     "mac:dev": "tauri dev",
     "mac:build": "tauri build --target universal-apple-darwin",
-    "mas:build": "tauri build --bundles app --target universal-apple-darwin --config src-tauri/tauri.appstore.conf.json && xcrun productbuild --sign \"3rd Party Mac Developer Installer\" --component src-tauri/target/universal-apple-darwin/release/bundle/macos/Tilde.app /Applications Tilde.pkg"
+    "mas:build": "tauri build --bundles app --target universal-apple-darwin --config src-tauri/tauri.appstore.conf.json && xcrun productbuild --sign \"3rd Party Mac Developer Installer\" --component src-tauri/target/universal-apple-darwin/release/bundle/macos/Tilde.app /Applications Tilde.pkg",
+    "mac:release": "APPLE_SIGNING_IDENTITY='Developer ID Application' APPLE_API_ISSUER=c8472152-4273-412a-ba4d-10d1e1cde4f3 APPLE_API_KEY=YP8ZJPN5HQ APPLE_API_KEY_PATH=$HOME/.appstoreconnect/private_keys/AuthKey_YP8ZJPN5HQ.p8 tauri build --target universal-apple-darwin --bundles dmg && D=$(ls src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg) && xcrun notarytool submit \"$D\" --key $HOME/.appstoreconnect/private_keys/AuthKey_YP8ZJPN5HQ.p8 --key-id YP8ZJPN5HQ --issuer c8472152-4273-412a-ba4d-10d1e1cde4f3 --wait && xcrun stapler staple \"$D\" && spctl -a -t open --context context:primary-signature -v \"$D\""
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",

@@ -272,28 +272,6 @@ export function Landing() {
             </article>
           </div>
 
-          <details className="choose-details">
-            <summary>macOS will warn you the first time. Here is why, and what to do.</summary>
-            <p>
-              Apple charges $99 a year for the developer account that signs and notarises Mac
-              software. <Tilde /> does not have one, so macOS cannot look up who built it. The
-              warning is about a missing signature, not about anything the app does.
-            </p>
-            <p>
-              Open the disk image and drag <Tilde /> to Applications. Then{' '}
-              <strong>right-click it and choose Open</strong>, and Open again when asked. If macOS
-              refuses outright, go to <strong>System Settings → Privacy &amp; Security</strong>,
-              scroll to the note about <Tilde />, and press <strong>Open Anyway</strong>. It is once,
-              not every launch.
-            </p>
-            <p>
-              If you would rather not take anyone&rsquo;s word for it: the whole app is{' '}
-              <a href={REPO} target="_blank" rel="noopener noreferrer">
-                on GitHub
-              </a>{' '}
-              and builds from source in one command.
-            </p>
-          </details>
         </section>
 
         <section id="keys" className="keys">
