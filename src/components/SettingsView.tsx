@@ -315,19 +315,18 @@ export function SettingsView() {
         {isDesktopApp() ? (
           <p className="set-prose">
             <Tilde /> fetches your feeds and keeps every article in a local index on this Mac.
-            There is no <Tilde /> account, no analytics, and nothing is stored on a server. The Mac
-            app requests each source directly — nothing passes through this project's proxy, so
-            there is not even a middle step that could keep a log. That index lives in{' '}
-            <code>~/Library/Containers/in.kjrlabs.tilde</code> (App Store copy) or{' '}
-            <code>~/Library/WebKit/in.kjrlabs.tilde</code> (direct download), which macOS keeps even
-            after <Tilde /> is moved to the Trash; delete that folder to remove everything.
+            There is no <Tilde /> account, no analytics, and nothing is stored on a server. Each
+            source is requested directly from your Mac. The index lives in a folder named{' '}
+            <code>in.kjrlabs.tilde</code> inside <code>~/Library</code>, which macOS keeps even after{' '}
+            <Tilde /> is moved to the Trash; delete that folder to remove everything.{' '}
+            <a href="https://tilde-rss-reader.vercel.app/privacy.html">Privacy policy</a>
           </p>
         ) : (
           <p className="set-prose">
             <Tilde /> fetches your feeds and keeps every article in a local index in this browser.
             There is no <Tilde /> account, no analytics, and nothing is stored on a server. On the
             web the fetch passes through this project's own proxy — the only step that exists
-            because browsers cannot request feeds directly — and that proxy keeps no log. Clearing
+            because browsers cannot request feeds directly — and that proxy writes no logs of its own. Clearing
             this site's data deletes everything.
           </p>
         )}

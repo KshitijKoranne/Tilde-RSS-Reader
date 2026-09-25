@@ -13,3 +13,4 @@ src-tauri/gen
 # Mac App Store
 src-tauri/embedded.provisionprofile
 *.pkg
+appstore/

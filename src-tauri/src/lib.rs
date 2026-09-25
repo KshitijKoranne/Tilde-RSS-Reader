@@ -14,7 +14,7 @@ use std::sync::OnceLock;
 use std::time::Duration;
 
 use serde::Serialize;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_opener::OpenerExt;
 
@@ -22,7 +22,7 @@ use tauri_plugin_opener::OpenerExt;
 /// too big here as well.
 const MAX_BYTES: usize = 5 * 1024 * 1024;
 const TIMEOUT: Duration = Duration::from_secs(20);
-const USER_AGENT: &str = "Tilde/1.0 (macOS; +https://github.com/KshitijKoranne/Tilde-RSS-Reader)";
+const USER_AGENT: &str = "Tilde/1.2 (macOS; +https://github.com/KshitijKoranne/Tilde-RSS-Reader)";
 const ACCEPT: &str = "application/rss+xml, application/atom+xml, application/xml, \
                       text/xml;q=0.9, text/html;q=0.8, */*;q=0.5";
 
@@ -204,6 +204,20 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
+        // Right-click "Open Link" or a dropped URL would navigate the window
+        // away with no way back. Send any web page to the browser instead.
+        .plugin(
+            tauri::plugin::Builder::<tauri::Wry>::new("keep-in-app")
+                .on_navigation(|webview, url| {
+                    let in_app = url.scheme() == "tauri"
+                        || matches!(url.host_str(), Some("localhost" | "tauri.localhost"));
+                    if !in_app && matches!(url.scheme(), "http" | "https") {
+                        let _ = webview.app_handle().opener().open_url(url.as_str(), None::<&str>);
+                    }
+                    in_app
+                })
+                .build(),
+        )
         .invoke_handler(tauri::generate_handler![
             fetch_document,
             save_text_file,

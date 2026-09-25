@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Support · Tilde</title>
+    <meta name="description" content="Help with Tilde, the free RSS reader for Mac and the web: importing feeds, where your data lives, and how to get in touch." />
+    <link rel="canonical" href="https://tilde-rss-reader.vercel.app/support.html" />
+    <link rel="icon" type="image/svg+xml" href="/tilde-icon.svg" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        --bg: #f3f2f2;
+        --text: #201e1d;
+        --muted: #605d5d;
+        --rule: #d7d3d3;
+        --link: #ae1800;
+        --accent: #ec3013;
+        --code-bg: #eae9e9;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1b1a19;
+          --text: #ece9e8;
+          --muted: #aaa5a4;
+          --rule: #3a3736;
+          --link: #ff9783;
+          --accent: #ff563c;
+          --code-bg: #2a2827;
+        }
+      }
+      *, *::before, *::after { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 17px/1.6 ui-serif, "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
+      }
+      main { max-width: 40rem; margin: 0 auto; padding: 3rem 1rem 4rem; }
+      header { border-bottom: 1px solid var(--rule); padding-bottom: 1.25rem; margin-bottom: 2rem; }
+      .brand {
+        font: 700 0.8rem/1 system-ui, -apple-system, "Helvetica Neue", sans-serif;
+        letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+        text-decoration: none;
+      }
+      h1, h2, h3 { font-family: system-ui, -apple-system, "Helvetica Neue", sans-serif; line-height: 1.2; }
+      h1 { font-size: 2rem; font-weight: 800; margin: 0.75rem 0 0.4rem; }
+      h2 { font-size: 1.1rem; font-weight: 700; margin: 2.2rem 0 0.5rem; }
+      h3 { font-size: 1rem; font-weight: 700; margin: 1.8rem 0 0.4rem; }
+      .meta { color: var(--muted); font-size: 0.95rem; margin: 0; }
+      p, ul, ol { margin: 0 0 1rem; }
+      ul, ol { padding-left: 1.25rem; }
+      li { margin-bottom: 0.4rem; }
+      a { color: var(--link); text-underline-offset: 2px; }
+      code, kbd {
+        font: 0.85em ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        background: var(--code-bg); padding: 0.1em 0.35em; word-break: break-all;
+      }
+      kbd { border: 1px solid var(--rule); white-space: nowrap; word-break: normal; }
+      .contact { border-left: 3px solid var(--accent); padding: 0.1rem 0 0.1rem 1rem; margin: 0 0 2rem; }
+      table { width: 100%; border-collapse: collapse; margin: 0 0 1rem; font-size: 0.95rem; }
+      td { padding: 0.45rem 0.5rem 0.45rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+      td:first-child { width: 7.5rem; white-space: nowrap; }
+      footer {
+        margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+        color: var(--muted); font-size: 0.9rem;
+      }
+      footer a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a class="brand" href="/">Tilde</a>
+        <h1>Support</h1>
+        <p class="meta">Tilde is a free RSS reader for Mac and the web that shows new posts from the sites you choose, and nothing else.</p>
+      </header>
+
+      <div class="contact">
+        <p><strong>Need help?</strong> Email <a href="mailto:kjrlabs9@gmail.com?subject=Tilde%20support">kjrlabs9@gmail.com</a>. It helps to mention whether you use the Mac app or the website, your macOS version, and the feed address if a particular feed is the problem. I usually reply within a few days.</p>
+      </div>
+
+      <h2>Common questions</h2>
+
+      <h3>How do I bring my feeds over from another reader?</h3>
+      <p>Export an OPML file from your old reader, then in Tilde open <strong>Settings</strong> and choose <strong>Import OPML</strong>. Folders come across as groups. <strong>Export OPML</strong> in the same place gives you a file you can keep as a backup or take to any other reader. It's also how you move your list between the Mac app and the website, since they don't sync.</p>
+
+      <h3>Where does Tilde keep my data on a Mac?</h3>
+      <p>Everything stays on your Mac, in the app's own folder:</p>
+      <ul>
+        <li>Mac App Store version: <code>~/Library/Containers/in.kjrlabs.tilde</code></li>
+        <li>Downloaded from GitHub: <code>~/Library/WebKit/in.kjrlabs.tilde</code></li>
+      </ul>
+      <p>On the web, it's kept in your browser's storage for this site. Nothing is stored on a server.</p>
+
+      <h3>How do I delete everything?</h3>
+      <p><strong>Mac:</strong> quit Tilde and move it to the Trash. macOS keeps the app's data even after that, so in Finder choose <strong>Go &rsaquo; Go to Folder</strong>, paste the folder path above, and delete that folder too.</p>
+      <p><strong>Web:</strong> open your browser's settings for <code>tilde-rss-reader.vercel.app</code> and clear its site data.</p>
+      <p>There's no other copy anywhere, so once that's done, it's all gone.</p>
+
+      <h3>A feed won't load. What can I do?</h3>
+      <ol>
+        <li>Open the address in your browser to check the site is up.</li>
+        <li>Try the site's home page instead. Tilde will look for the feed on its own.</li>
+        <li>Some feeds need a login or block automated readers, and Tilde can't get past that. On the website, a few sites also block requests from cloud servers; the Mac app asks each site directly, so it may work there.</li>
+        <li>Feeds larger than 5 MB are skipped.</li>
+      </ol>
+      <p>Still stuck? Email me the feed address and I'll take a look.</p>
+
+      <h3>Why don't I see images in articles?</h3>
+      <p>Remote images are off by default, because images are a common way for sites to track readers. Turn on <strong>Load remote images</strong> in Settings if you'd like to see them.</p>
+
+      <h3>What are the keyboard shortcuts?</h3>
+      <table>
+        <tbody>
+          <tr><td><kbd>j</kbd> / <kbd>k</kbd></td><td>Next, previous article</td></tr>
+          <tr><td><kbd>o</kbd></td><td>Open in the reader</td></tr>
+          <tr><td><kbd>m</kbd></td><td>Mark read or unread</td></tr>
+          <tr><td><kbd>s</kbd></td><td>Save for later</td></tr>
+          <tr><td><kbd>/</kbd></td><td>Search everything you have read</td></tr>
+          <tr><td><kbd>a</kbd></td><td>Add a feed</td></tr>
+          <tr><td><kbd>r</kbd></td><td>Refresh every source</td></tr>
+          <tr><td><kbd>f</kbd></td><td>Full-screen reading</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Leave full screen, close a dialog</td></tr>
+        </tbody>
+      </table>
+
+      <footer>
+        <p>&copy; 2026 Kshitij Koranne &middot; <a href="/privacy.html">Privacy Policy</a> &middot; <a href="/">Tilde</a></p>
+      </footer>
+    </main>
+  </body>
+</html>

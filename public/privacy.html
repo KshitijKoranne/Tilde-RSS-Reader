@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy Policy · Tilde</title>
+    <meta name="description" content="Tilde collects no personal data. Here is exactly what stays on your device and which services Tilde talks to." />
+    <link rel="canonical" href="https://tilde-rss-reader.vercel.app/privacy.html" />
+    <link rel="icon" type="image/svg+xml" href="/tilde-icon.svg" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        --bg: #f3f2f2;
+        --text: #201e1d;
+        --muted: #605d5d;
+        --rule: #d7d3d3;
+        --link: #ae1800;
+        --accent: #ec3013;
+        --code-bg: #eae9e9;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1b1a19;
+          --text: #ece9e8;
+          --muted: #aaa5a4;
+          --rule: #3a3736;
+          --link: #ff9783;
+          --accent: #ff563c;
+          --code-bg: #2a2827;
+        }
+      }
+      *, *::before, *::after { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 17px/1.6 ui-serif, "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
+      }
+      main { max-width: 40rem; margin: 0 auto; padding: 3rem 1rem 4rem; }
+      header { border-bottom: 1px solid var(--rule); padding-bottom: 1.25rem; margin-bottom: 2rem; }
+      .brand {
+        font: 700 0.8rem/1 system-ui, -apple-system, "Helvetica Neue", sans-serif;
+        letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+        text-decoration: none;
+      }
+      h1, h2 { font-family: system-ui, -apple-system, "Helvetica Neue", sans-serif; line-height: 1.2; }
+      h1 { font-size: 2rem; font-weight: 800; margin: 0.75rem 0 0.4rem; }
+      h2 { font-size: 1.1rem; font-weight: 700; margin: 2.2rem 0 0.5rem; }
+      .meta { color: var(--muted); font-size: 0.95rem; margin: 0; }
+      p, ul { margin: 0 0 1rem; }
+      ul { padding-left: 1.25rem; }
+      li { margin-bottom: 0.5rem; }
+      a { color: var(--link); text-underline-offset: 2px; }
+      strong { font-weight: 700; }
+      code {
+        font: 0.85em ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        background: var(--code-bg); padding: 0.1em 0.35em; word-break: break-all;
+      }
+      .summary { border-left: 3px solid var(--accent); padding: 0.1rem 0 0.1rem 1rem; margin: 0 0 2rem; }
+      footer {
+        margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+        color: var(--muted); font-size: 0.9rem;
+      }
+      footer a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a class="brand" href="/">Tilde</a>
+        <h1>Privacy Policy</h1>
+        <p class="meta">Effective 25 September 2026</p>
+      </header>
+
+      <div class="summary">
+        <p><strong>The short version:</strong> Tilde doesn't collect anything about you. There's no account, no analytics, no ads and no tracking. Your feeds, articles and reading history are stored on your own device, and I have no way to see them.</p>
+      </div>
+
+      <h2>Who runs Tilde</h2>
+      <p>Tilde is made by Kshitij Koranne, an independent developer who also publishes as KJR Labs. When this page says "I" or "me", that's who it means.</p>
+      <p>This policy covers both the Mac app (from the Mac App Store or downloaded directly) and the web version at <a href="https://tilde-rss-reader.vercel.app">tilde-rss-reader.vercel.app</a>.</p>
+
+      <h2>What I collect</h2>
+      <p>Nothing. Tilde doesn't ask for your name or email, doesn't assign you an ID, and doesn't send usage statistics or crash reports to me. I don't run a database, and there is no server that holds anything about you or what you read.</p>
+
+      <h2>What stays on your device</h2>
+      <p>Everything Tilde needs to work is kept locally:</p>
+      <ul>
+        <li>the feeds you subscribe to and any groups you put them in</li>
+        <li>the articles Tilde has downloaded, their text, and the search index built from them</li>
+        <li>what you've read and saved, and your settings</li>
+      </ul>
+      <p>On a Mac this lives in the app's own folder: <code>~/Library/Containers/in.kjrlabs.tilde</code> for the App Store version, or <code>~/Library/WebKit/in.kjrlabs.tilde</code> for the direct download. On the web it lives in your browser's storage for this site, along with a cached copy of the app so it can open offline.</p>
+      <p>None of it syncs anywhere. If you export your subscriptions as an OPML file, that file goes wherever you choose to save it.</p>
+
+      <h2>Who Tilde talks to</h2>
+      <p>Tilde has to go online to do its job. These are the only places it connects to:</p>
+      <ul>
+        <li><strong>The sites you subscribe to.</strong> Tilde fetches feeds from the sites you add. It also fetches an article's web page when you press "Read the full article", and loads images from those sites if you turn on "Load remote images" (off by default, because images are often used for tracking). Those sites see what any website sees when it's visited, such as an IP address and the time of the request (in the web version, feed requests reach them from Vercel's servers rather than from your connection). Their own privacy policies apply. Links you open go to your usual web browser.</li>
+        <li><strong>Google Fonts.</strong> Tilde's typefaces are loaded from Google's servers (<code>fonts.googleapis.com</code> and <code>fonts.gstatic.com</code>). When that happens, Google receives your IP address and basic browser information, as it would for any web request. Tilde sends Google nothing else. See <a href="https://policies.google.com/privacy">Google's privacy policy</a>.</li>
+        <li><strong>Vercel (web version only).</strong> The website is hosted on Vercel. Browsers aren't allowed to fetch most feeds directly, so the web version asks a small function on Vercel to fetch each feed and hand it back. That function doesn't store anything or keep its own logs. Vercel, like any web host, records basic request details (time, the address being fetched, browser type) that it keeps for a short period, typically no more than a day, and that I can see only for troubleshooting. See <a href="https://vercel.com/legal/privacy-policy">Vercel's privacy policy</a>. The Mac app never uses this function; it contacts each site directly.</li>
+      </ul>
+      <p>If you downloaded Tilde from the Mac App Store, Apple handles that download under its own privacy policy. If you've chosen in macOS settings to share analytics with app developers, Apple may pass me anonymous crash reports and overall usage numbers. That's controlled by Apple and by you, not by Tilde.</p>
+
+      <h2>Removing your data</h2>
+      <p>Because everything is on your device, you can delete it yourself at any time. On a Mac, quit Tilde and delete the folder listed above. On the web, clear this site's data in your browser settings. There's no copy anywhere else, so there's nothing for me to delete on my side.</p>
+      <p>Wherever you live and whatever privacy laws apply to you, I hold no personal data about you, so there's nothing for me to access, correct or hand over. You're still welcome to email me with questions.</p>
+
+      <h2>Children</h2>
+      <p>Tilde isn't made for children and doesn't knowingly collect information from anyone, children included, because it doesn't collect information at all. What appears in Tilde comes from the sites each person chooses to subscribe to.</p>
+
+      <h2>Changes to this policy</h2>
+      <p>If anything here changes, I'll update this page and the date at the top. If Tilde ever starts collecting any data, this page will say so clearly before that happens.</p>
+
+      <h2>Contact</h2>
+      <p>Questions about privacy, or anything else: <a href="mailto:kjrlabs9@gmail.com">kjrlabs9@gmail.com</a></p>
+
+      <footer>
+        <p>&copy; 2026 Kshitij Koranne &middot; <a href="/support.html">Support</a> &middot; <a href="/">Tilde</a></p>
+      </footer>
+    </main>
+  </body>
+</html>
