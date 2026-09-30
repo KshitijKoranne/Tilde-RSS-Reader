@@ -7,19 +7,20 @@ import '../styles/landing.css'
 
 const REPO = 'https://github.com/KshitijKoranne/Tilde-RSS-Reader'
 const MAC_RELEASE = `${REPO}/releases/latest`
+const MAC_APP_STORE = 'https://apps.apple.com/app/id6815928041'
 
-/** Store-badge style download link. Generic laptop glyph: no Apple marks here,
- *  the official Mac App Store badge goes next to it once the listing is live. */
+/** Store-badge style download link to the Mac App Store listing. Generic laptop
+ *  glyph: no Apple marks here. */
 function MacDownload() {
   return (
-    <a href={MAC_RELEASE} className="dl-badge" aria-label="Download Tilde for macOS">
+    <a href={MAC_APP_STORE} className="dl-badge" aria-label="Download Tilde on the Mac App Store">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
         <rect x="4" y="5" width="16" height="11" rx="1.5" />
         <path d="M2 19h20" strokeLinecap="round" />
       </svg>
       <span className="dl-badge-text">
-        <small>Download for</small>
-        <strong>macOS</strong>
+        <small>Download on the</small>
+        <strong>Mac App Store</strong>
       </span>
     </a>
   )
@@ -279,7 +280,12 @@ export function Landing() {
               </ul>
               <MacDownload />
               <p className="choose-foot">
-                Free. One universal build for Apple silicon and Intel. macOS 10.15 or later.
+                Free. One universal build for Apple silicon and Intel. macOS 12 or later. Prefer a
+                direct file?{' '}
+                <a href={MAC_RELEASE} target="_blank" rel="noopener noreferrer">
+                  Download it from GitHub
+                </a>
+                .
               </p>
             </article>
           </div>
