@@ -8,7 +8,7 @@
 and newsletters you pick — and nothing else. No ads, no algorithm, no suggestions.
 Everything you read stays on your own device.
 
-[**⬇ Download on the Mac App Store**](https://apps.apple.com/app/id6815928041) · [**Open in your browser**](https://tilde-rss-reader.vercel.app)
+[**⬇ Download on the Mac App Store**](https://apps.apple.com/app/id6815928041) · [**Open in your browser**](https://tilde.kjrlabs.in)
 
 <sub>Universal — Apple silicon and Intel · macOS 12+ · free · [direct download from GitHub](https://github.com/KshitijKoranne/Tilde-RSS-Reader/releases/latest) (macOS 10.15+)</sub>
 

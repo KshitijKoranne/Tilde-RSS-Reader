@@ -1,4 +1,4 @@
-# Tilde — https://tilde-rss-reader.vercel.app
+# Tilde — https://tilde.kjrlabs.in
 #
 # /app is the reader itself. It serves the same HTML shell as the landing page
 # (see the rewrite in vercel.json), so letting it be indexed would only split
@@ -10,4 +10,4 @@ Allow: /
 Disallow: /app
 Disallow: /api/
 
-Sitemap: https://tilde-rss-reader.vercel.app/sitemap.xml
+Sitemap: https://tilde.kjrlabs.in/sitemap.xml

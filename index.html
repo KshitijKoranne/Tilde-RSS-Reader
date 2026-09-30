@@ -8,7 +8,7 @@
       name="description"
       content="Tilde collects new posts from the blogs and news sites you pick. Free, no account, no ads, and everything stays on your own device. Web app and Mac app."
     />
-    <link rel="canonical" href="https://tilde-rss-reader.vercel.app/" />
+    <link rel="canonical" href="https://tilde.kjrlabs.in/" />
     <meta name="theme-color" content="#f3f2f2" />
     <link rel="icon" type="image/svg+xml" href="/tilde-icon.svg" />
 
@@ -16,13 +16,13 @@
          a crawler has no page to resolve a relative path against. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Tilde" />
-    <meta property="og:url" content="https://tilde-rss-reader.vercel.app/" />
+    <meta property="og:url" content="https://tilde.kjrlabs.in/" />
     <meta property="og:title" content="Tilde — a free RSS reader for Mac and the web" />
     <meta
       property="og:description"
       content="All the sites you read, in one place. No account, no ads, no algorithm — and everything stays on your own device."
     />
-    <meta property="og:image" content="https://tilde-rss-reader.vercel.app/og.png" />
+    <meta property="og:image" content="https://tilde.kjrlabs.in/og.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta
@@ -36,18 +36,30 @@
       name="twitter:description"
       content="All the sites you read, in one place. No account, no ads, no algorithm — and everything stays on your own device."
     />
-    <meta name="twitter:image" content="https://tilde-rss-reader.vercel.app/og.png" />
+    <meta name="twitter:image" content="https://tilde.kjrlabs.in/og.png" />
 
-    <!-- The page is rendered by JavaScript, so this is the one description of
-         Tilde a crawler can read without executing anything. -->
+    <!-- The page is rendered by JavaScript, so the description below and the
+         plain text inside #root are what a crawler can read without running
+         anything. React replaces that text the moment it mounts, and the
+         script hides it on every path except the landing page. -->
+    <script>
+      if (location.pathname !== '/' || !/^https?:$/.test(location.protocol)) {
+        document.documentElement.className = 'in-app'
+      }
+    </script>
+    <style>
+      .in-app #seo { display: none }
+      #seo { font-family: system-ui, sans-serif; line-height: 1.55; max-width: 44rem; margin: 0 auto; padding: 3rem 1.25rem; color: #151413 }
+      #seo a { color: inherit }
+    </style>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
           {
             "@type": "WebSite",
-            "@id": "https://tilde-rss-reader.vercel.app/#website",
-            "url": "https://tilde-rss-reader.vercel.app/",
+            "@id": "https://tilde.kjrlabs.in/#website",
+            "url": "https://tilde.kjrlabs.in/",
             "name": "Tilde",
             "description": "A free RSS reader with no account, for the web and macOS."
           },
@@ -56,10 +68,15 @@
             "name": "Tilde",
             "applicationCategory": "NewsApplication",
             "applicationSubCategory": "RSS reader",
-            "operatingSystem": "macOS 10.15 or later, and any modern web browser",
-            "url": "https://tilde-rss-reader.vercel.app/",
+            "operatingSystem": "macOS 12 or later, and any modern web browser",
+            "url": "https://tilde.kjrlabs.in/",
+            "image": "https://tilde.kjrlabs.in/og.png",
             "downloadUrl": "https://apps.apple.com/app/id6815928041",
-            "softwareVersion": "1.0.0",
+            "sameAs": [
+              "https://apps.apple.com/app/id6815928041",
+              "https://github.com/KshitijKoranne/Tilde-RSS-Reader"
+            ],
+            "softwareVersion": "1.2.0",
             "license": "https://opensource.org/licenses/MIT",
             "isAccessibleForFree": true,
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
@@ -93,7 +110,62 @@
     />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main id="seo">
+        <h1>Tilde — a free RSS reader for Mac and the web</h1>
+        <p>
+          Tilde collects new posts from the blogs, news sites and newsletters you pick, and nothing
+          else. It is free, there is no account, and everything stays on your own device.
+        </p>
+        <p>
+          You will reach the end. No endless scroll, no algorithm deciding what you see, and nothing
+          recommended to you.
+        </p>
+        <p>
+          <a href="/app">Open Tilde in your browser</a> ·
+          <a href="https://apps.apple.com/app/id6815928041">Download on the Mac App Store</a>
+        </p>
+
+        <h2>Why people use it</h2>
+        <h3>You actually finish</h3>
+        <p>
+          Tilde shows what is new since you last looked, and once you have read it the list is empty
+          and says so. Nothing refills it to keep you busy.
+        </p>
+        <h3>You choose what shows up</h3>
+        <p>
+          Paste a link to any site, or bring your whole list over from another reader in one OPML
+          file. Tilde never reorders your feeds or slips in posts you did not ask for.
+        </p>
+        <h3>You can find it again</h3>
+        <p>
+          Every article you open is saved on your own computer, in full. Search a half-remembered
+          phrase months later and it is still there, even if the site that published it is gone.
+        </p>
+
+        <h2>In a browser, or on your Mac</h2>
+        <p>
+          The web version needs nothing installed and works in any browser. The Mac app lives in the
+          Dock, fetches every source directly, and reads with the network off. Both are free.
+        </p>
+
+        <h2>Keyboard shortcuts</h2>
+        <ul>
+          <li>j / k: next and previous article</li>
+          <li>o: open it</li>
+          <li>m: mark read or unread</li>
+          <li>s: save for later</li>
+          <li>/: search everything you have read</li>
+          <li>a: add a site</li>
+        </ul>
+
+        <p>
+          <a href="/support.html">Support</a> · <a href="/privacy.html">Privacy</a> ·
+          <a href="https://github.com/KshitijKoranne/Tilde-RSS-Reader">Source on GitHub</a> · Made by
+          <a href="https://kjrlabs.in">KJR Labs</a>
+        </p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
