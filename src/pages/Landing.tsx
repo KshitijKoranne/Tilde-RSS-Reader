@@ -350,6 +350,7 @@ export function Landing() {
           <Brand size={18} />
           <span>a calm reader for the sites you choose.</span>
           <span className="footer-by">
+            <a href="/changelog.html">Changelog</a> ·{' '}
             Made by{' '}
             <a href="https://kjrlabs.in" target="_blank" rel="noopener noreferrer">
               KJR Labs

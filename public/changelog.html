@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Changelog · Tilde</title>
+    <meta name="description" content="What changed in each version of Tilde, the free RSS reader for Mac and the web." />
+    <link rel="canonical" href="https://tilde.kjrlabs.in/changelog.html" />
+    <link rel="icon" type="image/svg+xml" href="/tilde-icon.svg" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        --bg: #f3f2f2;
+        --text: #201e1d;
+        --muted: #605d5d;
+        --rule: #d7d3d3;
+        --link: #ae1800;
+        --accent: #ec3013;
+        --code-bg: #eae9e9;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1b1a19;
+          --text: #ece9e8;
+          --muted: #aaa5a4;
+          --rule: #3a3736;
+          --link: #ff9783;
+          --accent: #ff563c;
+          --code-bg: #2a2827;
+        }
+      }
+      *, *::before, *::after { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 17px/1.6 ui-serif, "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
+      }
+      main { max-width: 40rem; margin: 0 auto; padding: 3rem 1rem 4rem; }
+      header { border-bottom: 1px solid var(--rule); padding-bottom: 1.25rem; margin-bottom: 2rem; }
+      .brand {
+        font: 700 0.8rem/1 system-ui, -apple-system, "Helvetica Neue", sans-serif;
+        letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+        text-decoration: none;
+      }
+      h1, h2, h3 { font-family: system-ui, -apple-system, "Helvetica Neue", sans-serif; line-height: 1.2; }
+      h1 { font-size: 2rem; font-weight: 800; margin: 0.75rem 0 0.4rem; }
+      h2 { font-size: 1.1rem; font-weight: 700; margin: 2.2rem 0 0.5rem; }
+      h3 { font-size: 1rem; font-weight: 700; margin: 1.8rem 0 0.4rem; }
+      .meta { color: var(--muted); font-size: 0.95rem; margin: 0; }
+      p, ul, ol { margin: 0 0 1rem; }
+      ul, ol { padding-left: 1.25rem; }
+      li { margin-bottom: 0.4rem; }
+      a { color: var(--link); text-underline-offset: 2px; }
+      code, kbd {
+        font: 0.85em ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        background: var(--code-bg); padding: 0.1em 0.35em; word-break: break-all;
+      }
+      kbd { border: 1px solid var(--rule); white-space: nowrap; word-break: normal; }
+      .contact { border-left: 3px solid var(--accent); padding: 0.1rem 0 0.1rem 1rem; margin: 0 0 2rem; }
+      table { width: 100%; border-collapse: collapse; margin: 0 0 1rem; font-size: 0.95rem; }
+      td { padding: 0.45rem 0.5rem 0.45rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+      td:first-child { width: 7.5rem; white-space: nowrap; }
+      .release { margin: 2.2rem 0 0; }
+      .release h2 { margin: 0 0 0.15rem; }
+      .release .when { color: var(--muted); font-size: 0.9rem; margin: 0 0 0.75rem; }
+      footer {
+        margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+        color: var(--muted); font-size: 0.9rem;
+      }
+      footer a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a class="brand" href="/">Tilde</a>
+        <h1>Changelog</h1>
+        <p class="meta">What changed in each version, newest first.</p>
+      </header>
+
+      <section class="release" id="v1-3-0">
+        <h2>1.3.0</h2>
+        <p class="when"><time datetime="2026-10-04">4 October 2026</time></p>
+        <p>Four small options, all in Settings, all off until you turn them on.</p>
+        <ul>
+          <li><strong>Undo for Mark all read.</strong> A button shows for a few seconds so you can take it back.</li>
+          <li><strong>Every shortcut in the key strip.</strong> Adds <kbd>a</kbd> (add a source) and <kbd>r</kbd> (refresh) to the row under the list.</li>
+          <li><strong>Refresh when you return.</strong> Tilde checks your sources when you come back after a few minutes away.</li>
+          <li><strong>Dock badge.</strong> Your unread count on the Tilde icon in the Dock. Mac app only.</li>
+        </ul>
+        <p>If you change nothing, Tilde works exactly as before. Your feeds, saved articles and read state are untouched.</p>
+      </section>
+
+      <section class="release" id="v1-2-0">
+        <h2>1.2.0</h2>
+        <p class="when"><time datetime="2026-08-29">29 August 2026</time></p>
+        <ul>
+          <li><strong>Groups.</strong> Give a source a group in Settings and it folds up under that name in the sidebar, with its own unread count.</li>
+          <li><strong>Search that stays quick.</strong> Tilde searches an index of your archive instead of reading every article, so it is as fast in year three as in week one.</li>
+          <li><strong>Keep articles for.</strong> Choose to let go of read articles older than three months, six months or a year. Saved articles always stay.</li>
+          <li><strong>OPML keeps your folders.</strong> Folders come in as groups and go out as folders again.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v1-1-0">
+        <h2>1.1.0</h2>
+        <p class="when"><time datetime="2026-08-28">28 August 2026</time></p>
+        <ul>
+          <li><strong>Read the full article.</strong> Some feeds publish only a link, Hacker News for one. One button fetches the page and shows the article inside Tilde. Only when you ask.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v1-0-0">
+        <h2>1.0.0</h2>
+        <p class="when"><time datetime="2026-08-28">28 August 2026</time></p>
+        <p>The first release: a free RSS reader for the web and the Mac. No account, no ads, nothing recommended to you.</p>
+      </section>
+
+      <footer>
+        <p>&copy; 2026 Kshitij Koranne &middot; <a href="/support.html">Support</a> &middot; <a href="/privacy.html">Privacy Policy</a> &middot; <a href="/">Tilde</a></p>
+      </footer>
+    </main>
+  </body>
+</html>
