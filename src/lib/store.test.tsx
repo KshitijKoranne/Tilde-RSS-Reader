@@ -1,8 +1,13 @@
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as db from './db'
 import type { FetchedDocument } from './fetcher'
 import { StoreProvider, useStore } from './store'
+
+// Stands in for the Mac shell's window, which exists only inside Tauri. The
+// badge code never loads it in a browser, so nothing else here is affected.
+const setBadgeCount = vi.fn(async (_count?: number) => {})
+vi.mock('@tauri-apps/api/window', () => ({ getCurrentWindow: () => ({ setBadgeCount }) }))
 
 /* The reader end to end, minus the network and the interface.
  *
@@ -207,6 +212,149 @@ describe('the reader, end to end', () => {
       expect(store.feeds.map((f) => f.title)).toEqual(['Other'])
       expect(store.articles.map((a) => a.title)).toEqual(['Sourdough'])
       expect(store.groups.map((g) => g.name)).toEqual(['Food'])
+    })
+  })
+
+  describe('the options that are off until asked for', () => {
+    beforeEach(async () => {
+      await act(async () => void (await store.addFeed(FEED_URL, '')))
+      await act(async () => store.go('inbox'))
+    })
+
+    it('start switched off', () => {
+      expect(store.settings.undoMarkAllRead).toBe(false)
+      expect(store.settings.showAllHints).toBe(false)
+      expect(store.settings.refreshOnFocus).toBe(false)
+      expect(store.settings.dockBadge).toBe(false)
+    })
+
+    describe('undo for Mark all read', () => {
+      it('offers nothing while the option is off', async () => {
+        await act(async () => store.markAllRead())
+        expect(store.unreadCount).toBe(0)
+        // Only the "Following Example." left over from subscribing.
+        expect(store.toast?.action).toBeUndefined()
+        expect(store.toast?.message).not.toMatch(/^Marked/)
+      })
+
+      it('brings the articles back, here and on disk', async () => {
+        await act(async () => store.update({ undoMarkAllRead: true }))
+        await act(async () => store.markAllRead())
+        expect(store.unreadCount).toBe(0)
+        expect(store.toast?.message).toBe('Marked 2 articles read.')
+
+        await act(async () => store.toast?.action?.run())
+        expect(store.unreadCount).toBe(2)
+        expect(store.toast).toBeNull()
+        expect((await db.loadArticles()).every((a) => !a.read)).toBe(true)
+      })
+
+      it('leaves alone an article already marked unread since', async () => {
+        await act(async () => store.update({ undoMarkAllRead: true }))
+        await act(async () => store.markAllRead())
+        const undo = store.toast?.action?.run
+        const first = store.articles[0]
+        await act(async () => store.setRead(first.id, false))
+
+        await act(async () => undo?.())
+        expect(store.unreadCount).toBe(2)
+      })
+
+      it('does not bring back an article whose source was unsubscribed', async () => {
+        await act(async () => void (await store.addFeed(OTHER_URL, '')))
+        await act(async () => store.update({ undoMarkAllRead: true }))
+        await act(async () => store.markAllRead())
+        const undo = store.toast?.action?.run
+
+        await act(async () => void (await store.removeFeed(OTHER_URL)))
+        await act(async () => undo?.())
+
+        expect(store.articles.map((a) => a.title).sort()).toEqual(['Bicycles', 'The borrow checker'])
+        expect((await db.loadArticles()).map((a) => a.title).sort()).toEqual([
+          'Bicycles',
+          'The borrow checker',
+        ])
+        expect(store.unreadCount).toBe(2)
+      })
+    })
+
+    describe('refreshing when you come back', () => {
+      let fetches = 0
+      let clock = Date.now()
+
+      beforeEach(() => {
+        fetches = 0
+        clock = Date.now()
+        const serve = window.__TILDE_NATIVE_FETCH__!
+        window.__TILDE_NATIVE_FETCH__ = (url) => {
+          fetches += 1
+          return serve(url)
+        }
+        vi.spyOn(Date, 'now').mockImplementation(() => clock)
+      })
+      afterEach(() => vi.restoreAllMocks())
+
+      const comeBack = async (minutesAway: number) => {
+        clock += minutesAway * 60_000
+        await act(async () => void window.dispatchEvent(new Event('focus')))
+        await act(async () => void (await new Promise((r) => setTimeout(r, 20))))
+      }
+
+      it('does nothing while the option is off', async () => {
+        await comeBack(30)
+        expect(fetches).toBe(0)
+      })
+
+      it('refreshes after a long time away', async () => {
+        await act(async () => store.update({ refreshOnFocus: true }))
+        await comeBack(6)
+        expect(fetches).toBe(1)
+      })
+
+      it('does not refresh again for a quick return', async () => {
+        await act(async () => store.update({ refreshOnFocus: true }))
+        await comeBack(6)
+        await comeBack(1)
+        expect(fetches).toBe(1)
+      })
+
+      it('skips a return after only a moment away', async () => {
+        await act(async () => store.update({ refreshOnFocus: true }))
+        await comeBack(2)
+        expect(fetches).toBe(0)
+      })
+    })
+
+    describe('the Dock badge', () => {
+      beforeEach(() => {
+        setBadgeCount.mockClear()
+        ;(window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ = {}
+      })
+      afterEach(() => {
+        delete (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__
+      })
+
+      it('is never touched while the option is off', async () => {
+        await act(async () => store.setRead(store.articles[0].id, true))
+        expect(setBadgeCount).not.toHaveBeenCalled()
+      })
+
+      it('shows the unread count, follows it, and clears when turned off', async () => {
+        await act(async () => store.update({ dockBadge: true }))
+        await waitFor(() => expect(setBadgeCount).toHaveBeenLastCalledWith(2))
+
+        await act(async () => store.setRead(store.articles[0].id, true))
+        await waitFor(() => expect(setBadgeCount).toHaveBeenLastCalledWith(1))
+
+        await act(async () => store.update({ dockBadge: false }))
+        await waitFor(() => expect(setBadgeCount).toHaveBeenLastCalledWith(undefined))
+      })
+
+      it('shows no badge at all when everything is read', async () => {
+        await act(async () => store.update({ dockBadge: true }))
+        await act(async () => store.markAllRead())
+        await waitFor(() => expect(setBadgeCount).toHaveBeenLastCalledWith(undefined))
+      })
     })
   })
 })

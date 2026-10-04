@@ -122,6 +122,11 @@ export function Reader() {
       {store.toast && (
         <div className={`toast${store.toast.tone === 'error' ? ' is-error' : ''}`} role="status">
           {store.toast.message}
+          {store.toast.action && (
+            <button type="button" className="toast-action" onClick={store.toast.action.run}>
+              {store.toast.action.label}
+            </button>
+          )}
         </div>
       )}
     </div>

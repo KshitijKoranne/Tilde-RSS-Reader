@@ -958,6 +958,19 @@ a.btn-ghost:hover { color: var(--color-accent); }
   box-shadow: var(--shadow-md);
 }
 .toast.is-error { background: var(--color-accent-700); }
+.toast-action {
+  margin-left: 14px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.toast-action:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 
 /* ── narrow windows ─────────────────────────────────────────────────────── */
 

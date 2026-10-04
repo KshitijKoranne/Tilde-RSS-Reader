@@ -129,7 +129,7 @@ the sanitiser held against ten hostile inputs; the proxy refuses `localhost`, li
 private address ranges; 66 end-to-end browser assertions including offline boot and a first run
 that makes zero network requests.
 
-`npm test` runs the suite — 140 tests over the parsing, sanitising and storage layer, which is
+`npm test` runs the suite — 153 tests over the parsing, sanitising and storage layer, which is
 where input from the open web arrives and where your archive lives. It covers the sanitiser
 against hostile markup, all three feed formats, OPML round trips, the search index, and the
 upgrade that moves an existing archive to the current storage layout without losing an article.

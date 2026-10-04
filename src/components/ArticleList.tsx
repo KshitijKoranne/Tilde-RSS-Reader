@@ -3,6 +3,8 @@ import { plural, shortTime } from '../lib/format'
 import { useStore } from '../lib/store'
 
 const HINTS = ['j / k move', 'o open', 'm read', 's save', '/ search', 'f full screen']
+// The same keys the reader answers to that the strip leaves out by default.
+const ALL_HINTS = [...HINTS, 'a add', 'r refresh']
 
 export function ArticleList() {
   const store = useStore()
@@ -108,7 +110,10 @@ export function ArticleList() {
       </div>
 
       <footer className="list-foot">
-        {store.settings.showKeyboardHints && HINTS.map((hint) => <span key={hint}>{hint}</span>)}
+        {store.settings.showKeyboardHints &&
+          (store.settings.showAllHints ? ALL_HINTS : HINTS).map((hint) => (
+            <span key={hint}>{hint}</span>
+          ))}
       </footer>
     </section>
   )

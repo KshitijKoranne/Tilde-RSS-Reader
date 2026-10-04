@@ -70,6 +70,14 @@ export interface Settings {
   retention: Retention
   /** Groups the reader has folded shut in the rail. */
   collapsedGroups: string[]
+  /** Offer a few seconds to take back "Mark all read". */
+  undoMarkAllRead: boolean
+  /** List every shortcut in the strip, not just the six it opens with. */
+  showAllHints: boolean
+  /** Check the sources when the window comes back into view. */
+  refreshOnFocus: boolean
+  /** Mac app only: the unread count on the Dock icon. */
+  dockBadge: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -82,6 +90,12 @@ export const DEFAULT_SETTINGS: Settings = {
   keepArchive: true,
   retention: 'Keep everything',
   collapsedGroups: [],
+  // Everything below is opt-in: an install that never opens Settings behaves
+  // exactly as it did before these existed.
+  undoMarkAllRead: false,
+  showAllHints: false,
+  refreshOnFocus: false,
+  dockBadge: false,
 }
 
 /** 'welcome' is the first-run source picker; it is not a rail destination. */

@@ -13,8 +13,10 @@ import { forgetBodies, rememberBody } from './bodies'
 import * as db from './db'
 import { extractArticle } from './extract'
 import { groupFeeds, makeFeed, refreshFeeds, resolveFeed, toArticles, type FeedGroup } from './feeds'
+import { plural } from './format'
 import { writeGlance } from './glance'
 import { downloadOpml, parseOpml } from './opml'
+import { setDockBadge } from './platform'
 import {
   DEFAULT_SETTINGS,
   RETENTION_DAYS,
@@ -26,6 +28,13 @@ import {
 
 const AUTO_REFRESH_MS = 15 * 60 * 1000
 
+/* Coming back to the window refreshes only if the last check is at least this
+ * old, so flicking between apps never turns into a fetch each time. */
+const FOCUS_REFRESH_MS = 5 * 60 * 1000
+
+/* How long "Undo" stays on offer after Mark all read. */
+const UNDO_MS = 8000
+
 /* Search waits this long after the last keystroke. Long enough that typing a
  * word costs one search rather than five, short enough to feel like none. */
 const SEARCH_DEBOUNCE_MS = 120
@@ -33,6 +42,8 @@ const SEARCH_DEBOUNCE_MS = 120
 export interface Toast {
   message: string
   tone: 'info' | 'error'
+  /** A single button on the toast, for the one thing that can be taken back. */
+  action?: { label: string; run: () => void }
 }
 
 interface TildeStore {
@@ -126,6 +137,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     toastTimer.current = window.setTimeout(() => setToast(null), tone === 'error' ? 6000 : 3500)
   }, [])
 
+  const notifyWithAction = useCallback((message: string, action: NonNullable<Toast['action']>) => {
+    window.clearTimeout(toastTimer.current)
+    setToast({
+      message,
+      tone: 'info',
+      action: {
+        label: action.label,
+        run: () => {
+          window.clearTimeout(toastTimer.current)
+          setToast(null)
+          action.run()
+        },
+      },
+    })
+    toastTimer.current = window.setTimeout(() => setToast(null), UNDO_MS)
+  }, [])
+
   // Latest state for callbacks that must not re-create on every keystroke.
   const latest = useRef({ feeds, articles, settings })
   latest.current = { feeds, articles, settings }
@@ -209,8 +237,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [notify, nextSeq],
   )
 
+  // When the sources were last all asked, by any route. Starts at launch: the
+  // boot refresh below is that first ask.
+  const lastRefresh = useRef(Date.now())
+
   const refreshAll = useCallback(async () => {
     if (!latest.current.feeds.length) return
+    lastRefresh.current = Date.now()
     setRefreshing(true)
     try {
       await ingest(latest.current.feeds)
@@ -261,6 +294,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setReady(true)
 
       if (storedFeeds.length) {
+        lastRefresh.current = Date.now()
         setRefreshing(true)
         try {
           await ingest(storedFeeds)
@@ -282,6 +316,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const timer = window.setInterval(() => void refreshAll(), AUTO_REFRESH_MS)
     return () => window.clearInterval(timer)
   }, [refreshAll])
+
+  /* Opt-in: ask again when the window comes back into view, so a Mac that has
+   * been asleep or hidden does not show yesterday's list until the timer fires. */
+  const refreshOnFocus = settings.refreshOnFocus
+  useEffect(() => {
+    if (!refreshOnFocus) return
+    const check = () => {
+      if (document.visibilityState !== 'visible') return
+      if (Date.now() - lastRefresh.current < FOCUS_REFRESH_MS) return
+      void refreshAll()
+    }
+    document.addEventListener('visibilitychange', check)
+    window.addEventListener('focus', check)
+    return () => {
+      document.removeEventListener('visibilitychange', check)
+      window.removeEventListener('focus', check)
+    }
+  }, [refreshOnFocus, refreshAll])
 
   /* ── search ──────────────────────────────────────────────────────────── */
 
@@ -350,6 +402,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (!ready) return
     writeGlance({ feeds: feeds.length, unread: unreadCount })
   }, [ready, feeds.length, unreadCount])
+
+  /* Opt-in Dock badge. Nothing is sent to the shell until it has been turned on
+   * once; turning it off takes the badge down. */
+  const badgeShown = useRef(false)
+  const dockBadge = settings.dockBadge
+  useEffect(() => {
+    if (!ready) return
+    if (dockBadge) {
+      badgeShown.current = true
+      void setDockBadge(unreadCount).catch(() => {})
+    } else if (badgeShown.current) {
+      badgeShown.current = false
+      void setDockBadge(0).catch(() => {})
+    }
+  }, [ready, dockBadge, unreadCount])
 
   const savedCount = useMemo(() => articles.reduce((n, a) => n + (a.starred ? 1 : 0), 0), [articles])
   const unreadByFeed = useMemo(() => {
@@ -463,7 +530,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     persistArticles(changed)
     setSticky(new Set())
     setSelectedId(null)
-  }, [visible, persistArticles])
+
+    if (!latest.current.settings.undoMarkAllRead) return
+    const cleared = changed.map((a) => a.id)
+    notifyWithAction(`Marked ${plural(cleared.length, 'article', 'articles')} read.`, {
+      label: 'Undo',
+      run: () => {
+        // Work from what is there now: an article that was unsubscribed or
+        // pruned in the meantime stays gone, and one already marked unread
+        // is left alone.
+        const live = new Map(latest.current.articles.map((a) => [a.id, a]))
+        const back = cleared
+          .map((id) => live.get(id))
+          .filter((a): a is Article => Boolean(a?.read))
+          .map((a) => ({ ...a, read: false }))
+        if (!back.length) return
+        const restored = new Map(back.map((a) => [a.id, a]))
+        setArticles((current) => current.map((a) => restored.get(a.id) ?? a))
+        persistArticles(back)
+      },
+    })
+  }, [visible, persistArticles, notifyWithAction])
 
   const addFeed = useCallback(
     async (input: string, group = '') => {

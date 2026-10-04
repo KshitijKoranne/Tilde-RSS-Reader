@@ -25,7 +25,7 @@ const SIZES: ReaderSize[] = ['Small', 'Regular', 'Large']
 const DENSITIES: ListDensity[] = ['Comfortable', 'Compact']
 const RETENTIONS: Retention[] = ['Keep everything', '1 year', '6 months', '3 months']
 
-const TOGGLES: { key: keyof Settings; label: string; note: string }[] = [
+const TOGGLES: { key: keyof Settings; label: string; note: string; desktopOnly?: boolean }[] = [
   {
     key: 'markReadOnScroll',
     label: 'Mark read when scrolled past',
@@ -45,6 +45,27 @@ const TOGGLES: { key: keyof Settings; label: string; note: string }[] = [
     key: 'showKeyboardHints',
     label: 'Show the shortcut strip',
     note: 'The row of key hints under the article list.',
+  },
+  {
+    key: 'showAllHints',
+    label: 'Show every shortcut in the strip',
+    note: 'Adds a to add a source and r to refresh. Needs the shortcut strip above.',
+  },
+  {
+    key: 'undoMarkAllRead',
+    label: 'Offer to undo Mark all read',
+    note: 'A button stays on screen for a few seconds after you clear a list.',
+  },
+  {
+    key: 'refreshOnFocus',
+    label: 'Refresh when you come back to Tilde',
+    note: 'Checks your sources on return if the last check was over five minutes ago. The 15-minute refresh carries on either way.',
+  },
+  {
+    key: 'dockBadge',
+    label: 'Show the unread count on the Dock icon',
+    note: 'Off by default. Tilde never nags unless you ask it to.',
+    desktopOnly: true,
   },
 ]
 
@@ -229,7 +250,7 @@ export function SettingsView() {
             </p>
           </div>
 
-          {TOGGLES.map((toggle) => (
+          {TOGGLES.filter((toggle) => !toggle.desktopOnly || isDesktopApp()).map((toggle) => (
             <button
               key={toggle.key}
               type="button"

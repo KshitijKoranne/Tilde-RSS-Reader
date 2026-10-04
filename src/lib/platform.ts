@@ -38,6 +38,14 @@ async function command<T>(name: string, args?: Record<string, unknown>): Promise
   return (await invoke())<T>(name, args)
 }
 
+/** Puts a number on the Dock icon; 0 takes it off. A no-op in a browser, which
+ *  has no Dock. Callers decide whether the badge is wanted at all. */
+export async function setDockBadge(count: number): Promise<void> {
+  if (!isDesktopApp()) return
+  const { getCurrentWindow } = await import('@tauri-apps/api/window')
+  await getCurrentWindow().setBadgeCount(count > 0 ? count : undefined)
+}
+
 /** Opens a link in the user's own browser. */
 export async function openExternal(url: string): Promise<void> {
   if (!isDesktopApp()) {

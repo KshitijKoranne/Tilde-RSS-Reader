@@ -208,4 +208,35 @@ describe('settings', () => {
     expect(loaded.retention).toBe('Keep everything')
     expect(loaded.collapsedGroups).toEqual([])
   })
+
+  it('leaves every newer option off for a record saved before they existed', async () => {
+    await empty()
+    // Exactly what 1.2.0 wrote: no sign of the four newer options.
+    await db.saveSettings({
+      font: 'Plex Mono',
+      size: 'Large',
+      density: 'Compact',
+      showKeyboardHints: false,
+      markReadOnScroll: false,
+      loadImages: true,
+      keepArchive: true,
+      retention: '6 months',
+      collapsedGroups: ['News'],
+    } as never)
+    const loaded = await db.loadSettings()
+    // Nothing the person had chosen changes...
+    expect(loaded.font).toBe('Plex Mono')
+    expect(loaded.size).toBe('Large')
+    expect(loaded.density).toBe('Compact')
+    expect(loaded.showKeyboardHints).toBe(false)
+    expect(loaded.markReadOnScroll).toBe(false)
+    expect(loaded.loadImages).toBe(true)
+    expect(loaded.retention).toBe('6 months')
+    expect(loaded.collapsedGroups).toEqual(['News'])
+    // ...and nothing new switches itself on.
+    expect(loaded.undoMarkAllRead).toBe(false)
+    expect(loaded.showAllHints).toBe(false)
+    expect(loaded.refreshOnFocus).toBe(false)
+    expect(loaded.dockBadge).toBe(false)
+  })
 })
