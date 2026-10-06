@@ -55,7 +55,7 @@ export async function extractArticle(url: string): Promise<ExtractedArticle> {
 
   /* Readability resolves links and images against the document's base, and a
    * document built by DOMParser inherits Tilde's own URL. Without this, every
-   * relative image in the article would point at tilde-rss-reader.vercel.app.
+   * relative image in the article would point at tilde.kjrlabs.in.
    * finalUrl is the address after redirects, which is the correct base. */
   const base = parsed.createElement('base')
   base.setAttribute('href', document_.finalUrl || url)

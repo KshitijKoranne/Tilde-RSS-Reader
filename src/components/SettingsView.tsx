@@ -340,7 +340,7 @@ export function SettingsView() {
             source is requested directly from your Mac. The index lives in a folder named{' '}
             <code>in.kjrlabs.tilde</code> inside <code>~/Library</code>, which macOS keeps even after{' '}
             <Tilde /> is moved to the Trash; delete that folder to remove everything.{' '}
-            <a href="https://tilde-rss-reader.vercel.app/privacy.html">Privacy policy</a>
+            <a href="https://tilde.kjrlabs.in/privacy.html">Privacy policy</a>
           </p>
         ) : (
           <p className="set-prose">

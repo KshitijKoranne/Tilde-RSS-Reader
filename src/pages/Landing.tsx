@@ -350,6 +350,11 @@ export function Landing() {
           <Brand size={18} />
           <span>a calm reader for the sites you choose.</span>
           <span className="footer-by">
+            <a href="/free-rss-reader-mac.html">Free RSS reader for Mac</a> ·{' '}
+            <a href="/rss-reader-no-account.html">No-account RSS reader</a> ·{' '}
+            <a href="/import-opml.html">Import OPML</a> ·{' '}
+            <a href="/support.html">Support</a> ·{' '}
+            <a href="/privacy.html">Privacy</a> ·{' '}
             <a href="/changelog.html">Changelog</a> ·{' '}
             Made by{' '}
             <a href="https://kjrlabs.in" target="_blank" rel="noopener noreferrer">

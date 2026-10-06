@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Import OPML: Move Feeds From Another RSS Reader | Tilde</title>
+    <meta name="description" content="Step by step: export an OPML file from your old RSS reader, then use Settings &gt; Import OPML in Tilde. Folders become groups. Export OPML to leave any time." />
+    <link rel="canonical" href="https://tilde.kjrlabs.in/import-opml.html" />
+    <meta property="og:title" content="Import OPML: Move Feeds From Another RSS Reader | Tilde" />
+    <meta property="og:description" content="Step by step: export an OPML file from your old RSS reader, then use Settings &gt; Import OPML in Tilde. Folders become groups. Export OPML to leave any time." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tilde.kjrlabs.in/import-opml.html" />
+    <meta property="og:image" content="https://tilde.kjrlabs.in/og.png" />
+    <meta property="og:site_name" content="Tilde" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="/tilde-icon.svg" />
+    <meta name="color-scheme" content="light dark" />
+    <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://tilde.kjrlabs.in/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Import OPML",
+      "item": "https://tilde.kjrlabs.in/import-opml.html"
+    }
+  ]
+}</script>
+    <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": "https://tilde.kjrlabs.in/import-opml.html#webpage",
+  "url": "https://tilde.kjrlabs.in/import-opml.html",
+  "name": "Import OPML: Move Feeds From Another RSS Reader | Tilde",
+  "description": "Step by step: export an OPML file from your old RSS reader, then use Settings > Import OPML in Tilde. Folders become groups. Export OPML to leave any time.",
+  "inLanguage": "en",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Tilde",
+    "url": "https://tilde.kjrlabs.in/"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "Tilde",
+    "url": "https://tilde.kjrlabs.in/",
+    "applicationCategory": "BrowserApplication",
+    "operatingSystem": "macOS 12 or later, web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+}</script>
+    <style>
+      :root {
+        --bg: #f3f2f2;
+        --text: #201e1d;
+        --muted: #605d5d;
+        --rule: #d7d3d3;
+        --link: #ae1800;
+        --accent: #ec3013;
+        --code-bg: #eae9e9;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1b1a19;
+          --text: #ece9e8;
+          --muted: #aaa5a4;
+          --rule: #3a3736;
+          --link: #ff9783;
+          --accent: #ff563c;
+          --code-bg: #2a2827;
+        }
+      }
+      *, *::before, *::after { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 17px/1.6 ui-serif, "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
+      }
+      main { max-width: 40rem; margin: 0 auto; padding: 3rem 1rem 4rem; }
+      header { border-bottom: 1px solid var(--rule); padding-bottom: 1.25rem; margin-bottom: 2rem; }
+      .brand {
+        font: 700 0.8rem/1 system-ui, -apple-system, "Helvetica Neue", sans-serif;
+        letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+        text-decoration: none;
+      }
+      h1, h2, h3 { font-family: system-ui, -apple-system, "Helvetica Neue", sans-serif; line-height: 1.2; }
+      h1 { font-size: 2rem; font-weight: 800; margin: 0.75rem 0 0.4rem; }
+      h2 { font-size: 1.1rem; font-weight: 700; margin: 2.2rem 0 0.5rem; }
+      h3 { font-size: 1rem; font-weight: 700; margin: 1.8rem 0 0.4rem; }
+      .meta { color: var(--muted); font-size: 0.95rem; margin: 0; }
+      p, ul, ol { margin: 0 0 1rem; }
+      ul, ol { padding-left: 1.25rem; }
+      li { margin-bottom: 0.4rem; }
+      a { color: var(--link); text-underline-offset: 2px; }
+      code, kbd {
+        font: 0.85em ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        background: var(--code-bg); padding: 0.1em 0.35em; word-break: break-all;
+      }
+      kbd { border: 1px solid var(--rule); white-space: nowrap; word-break: normal; }
+      .contact { border-left: 3px solid var(--accent); padding: 0.1rem 0 0.1rem 1rem; margin: 0 0 2rem; }
+      table { width: 100%; border-collapse: collapse; margin: 0 0 1rem; font-size: 0.95rem; }
+      td { padding: 0.45rem 0.5rem 0.45rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+      td:first-child { width: 7.5rem; white-space: nowrap; }
+      .cta { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.25rem 0 1.75rem; }
+      .btn {
+        font: 700 0.95rem/1 system-ui, -apple-system, "Helvetica Neue", sans-serif;
+        padding: 0.85rem 1.15rem; background: var(--link); color: var(--bg);
+        text-decoration: none; border: 1px solid var(--link);
+      }
+      .btn.alt { background: transparent; color: var(--link); }
+      footer {
+        margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+        color: var(--muted); font-size: 0.9rem;
+      }
+      footer a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a class="brand" href="/">Tilde</a>
+        <h1>Import OPML: move your feeds to Tilde from another RSS reader</h1>
+        <p class="meta">Export a file from your old reader, import it into Tilde, and your subscriptions arrive with their folders intact.</p>
+      </header>
+
+      <p>Switching RSS readers shouldn't mean retyping a hundred feed addresses. Nearly every reader can export your subscriptions as an OPML file, and Tilde can import one. This page covers both halves: getting the file out of the reader you use now, and getting it into Tilde. It also explains how to take your feeds back out, because you should always be able to.</p>
+
+      <h2>What an OPML file is</h2>
+      <p>OPML is a plain text file that lists your subscriptions: the name of each feed, its address, and the folders you put them in. It is the common format readers use to hand a feed list to each other. It carries your list, not your reading history, so articles you have already read or saved in the old reader don't travel with it.</p>
+
+      <h2>Step 1: export OPML from your old reader</h2>
+      <p>Every reader puts this in a slightly different place, so I can't give one click path that fits all of them. Look in the reader's settings, preferences or File menu for something called <strong>Export</strong>, <strong>Export OPML</strong>, or <strong>Export subscriptions</strong>. Some readers hide it under an account or data section. Choose it, and save the file somewhere you can find it again. It usually ends in <code>.opml</code> or <code>.xml</code>.</p>
+      <p>If you can't find the option, search the reader's help pages for "OPML". If it truly has no export, you can still add your feeds to Tilde one at a time by pasting site addresses.</p>
+
+      <h2>Step 2: import it into Tilde</h2>
+      <ol>
+        <li>Open Tilde, either the <a href="https://apps.apple.com/app/id6815928041">Mac app</a> or the <a href="https://tilde.kjrlabs.in/app">web app</a>. The steps are the same in both.</li>
+        <li>Open <strong>Settings</strong>.</li>
+        <li>Choose <strong>Import OPML</strong>.</li>
+        <li>Pick the file you saved in step 1.</li>
+        <li>Wait a moment while your feeds are added, then press <kbd>r</kbd> to refresh every source.</li>
+      </ol>
+      <p>That is all of it. Nothing is uploaded anywhere along the way, and no account is needed. The file is read on your own device.</p>
+
+      <h2>What happens to your folders</h2>
+      <p>Folders in the OPML file come across as groups in Tilde. If your old reader had a folder called "News" holding twelve feeds, you will find a "News" group with those twelve feeds in it. Each group keeps its own unread count, so the structure you built over the years still works.</p>
+
+      <h2>Check it over before you let go</h2>
+      <p>I would keep the old reader around for a few days. Scroll through your groups in Tilde and compare them with what you had. A few things can look different:</p>
+      <ul>
+        <li>Some feeds may have moved or died since you last looked. A feed that won't load in Tilde probably wouldn't load elsewhere either. Open the address in a browser to check the site is up, or try the site's home page, and Tilde will look for the feed itself.</li>
+        <li>Feeds that need a login, or that block automated readers, can't be fetched.</li>
+        <li>Feeds larger than 5 MB are skipped.</li>
+      </ul>
+      <p>The <a href="/support.html">support page</a> has more on stubborn feeds, and you can email if one particular feed is giving you trouble.</p>
+
+      <h2>Leaving Tilde: export OPML</h2>
+      <p>The same Settings screen has <strong>Export OPML</strong>. It writes your subscriptions to a file, with your groups going out as folders. Any other reader that accepts OPML can import it. There is no lock-in here, and no reason to hold back from trying Tilde. Exporting now and then is also a sensible backup.</p>
+
+      <h2>Moving between the Mac app and the web</h2>
+      <p>Tilde's Mac app and web version don't sync, since neither one uses an account. If you want the same list in both places, use the same method: export OPML from one, import it into the other. Do it again whenever you add a batch of new feeds and want them on both sides.</p>
+
+      <h2>Starting on a clean list</h2>
+      <p>A new install of Tilde subscribes to nothing and offers a picker of 18 feeds. If you are importing a file, you can skip the picker entirely and let your own list be the whole thing. Paste any site address later and Tilde finds its feed. It reads RSS 2.0, Atom 1.0 and RDF.</p>
+      <p>If you want to know what you are moving to, the pages on a <a href="/free-rss-reader-mac.html">free RSS reader for Mac</a> and an <a href="/rss-reader-no-account.html">RSS reader without an account</a> explain how Tilde works and what it keeps on your device.</p>
+      <p class="cta">
+        <a class="btn" href="https://apps.apple.com/app/id6815928041">Get Tilde on the Mac App Store</a>
+        <a class="btn alt" href="https://tilde.kjrlabs.in/app">Open the web app</a>
+      </p>
+
+      <p>Tilde is free and MIT licensed, made by <a href="https://kjrlabs.in">KJR Labs</a>. The <a href="/">home page</a> has the short version, and the <a href="/changelog.html">changelog</a> lists what has changed.</p>
+
+      <footer>
+        <p>&copy; 2026 Kshitij Koranne &middot; <a href="/support.html">Support</a> &middot; <a href="/privacy.html">Privacy Policy</a> &middot; <a href="/changelog.html">Changelog</a> &middot; <a href="/">Tilde</a></p>
+      </footer>
+    </main>
+  </body>
+</html>
