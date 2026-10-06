@@ -327,3 +327,35 @@ html { scroll-behavior: smooth; }
   letter-spacing: -0.01em;
 }
 .choose-card .dl-badge { margin-top: auto; align-self: flex-start; }
+
+/* — Blog dropdown (native <details>, no library) — */
+.landing .nav { position: relative; }
+.landing .nav-menu { position: relative; }
+.landing .nav-menu summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+}
+.landing .nav-menu summary::-webkit-details-marker { display: none; }
+.landing .nav-menu summary::after { content: ' \25BE'; }
+.landing .nav-menu summary:hover,
+.landing .nav-menu[open] summary { color: var(--color-accent); }
+.landing .nav-menu-list {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: -12px;
+  z-index: 20;
+  min-width: 250px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  border: 2px solid var(--color-divider);
+}
+.landing .nav-menu-list a { padding: 8px 12px; white-space: nowrap; }
+.landing .nav-menu-list a:hover { background: var(--color-surface); }
+@media (max-width: 720px) {
+  .landing .nav-menu { position: static; }
+  .landing .nav-menu-list { left: 24px; right: 24px; min-width: 0; }
+}

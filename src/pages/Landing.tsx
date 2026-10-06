@@ -107,6 +107,23 @@ export function Landing() {
     document.title = 'Tilde — a free RSS reader for Mac and the web'
   }, [])
 
+  // The Blog menu is a native <details>; close it on an outside click or Esc.
+  useEffect(() => {
+    const close = (e: Event) => {
+      const menu = document.querySelector<HTMLDetailsElement>('.nav-menu')
+      if (!menu?.open) return
+      if (e.type === 'keydown' && (e as KeyboardEvent).key !== 'Escape') return
+      if (e.type === 'click' && menu.contains(e.target as Node)) return
+      menu.open = false
+    }
+    document.addEventListener('click', close)
+    document.addEventListener('keydown', close)
+    return () => {
+      document.removeEventListener('click', close)
+      document.removeEventListener('keydown', close)
+    }
+  }, [])
+
   return (
     <div className="landing">
       <nav className="nav">
@@ -119,6 +136,14 @@ export function Landing() {
         <a href="#compare">How it compares</a>
         <a href="#mac">Mac app</a>
         <a href="#keys">Shortcuts</a>
+        <details className="nav-menu">
+          <summary>Blog</summary>
+          <div className="nav-menu-list">
+            <a href="/free-rss-reader-mac.html">Free RSS reader for Mac</a>
+            <a href="/rss-reader-no-account.html">RSS reader without an account</a>
+            <a href="/import-opml.html">Import OPML from another reader</a>
+          </div>
+        </details>
         <Link to="/app" className="btn btn-primary" style={{ marginLeft: 'auto' }}>
           <span className="btn-label">
             {returning ? (

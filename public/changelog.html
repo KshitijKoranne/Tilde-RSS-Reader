@@ -70,12 +70,21 @@
         color: var(--muted); font-size: 0.9rem;
       }
       footer a { color: inherit; }
+          .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+      .blog { position: relative; font: 600 0.9rem/1 system-ui, -apple-system, "Helvetica Neue", sans-serif; }
+      .blog summary { list-style: none; cursor: pointer; user-select: none; }
+      .blog summary::-webkit-details-marker { display: none; }
+      .blog summary::after { content: " \25BE"; }
+      .blog summary:hover, .blog[open] summary { color: var(--link); }
+      .blog div { position: absolute; right: 0; top: calc(100% + 0.6rem); z-index: 10; min-width: 15.5rem; padding: 0.4rem; background: var(--bg); border: 1px solid var(--rule); display: flex; flex-direction: column; }
+      .blog div a { padding: 0.5rem 0.65rem; text-decoration: none; font-weight: 500; white-space: nowrap; }
+      .blog div a:hover { background: var(--rule); }
     </style>
   </head>
   <body>
     <main>
       <header>
-        <a class="brand" href="/">Tilde</a>
+        <div class="topbar"><a class="brand" href="/">Tilde</a><details class="blog"><summary>Blog</summary><div><a href="/free-rss-reader-mac.html">Free RSS reader for Mac</a><a href="/rss-reader-no-account.html">RSS reader without an account</a><a href="/import-opml.html">Import OPML from another reader</a></div></details></div>
         <h1>Changelog</h1>
         <p class="meta">What changed in each version, newest first.</p>
       </header>
@@ -122,5 +131,15 @@
         <p>&copy; 2026 Kshitij Koranne &middot; <a href="/support.html">Support</a> &middot; <a href="/privacy.html">Privacy Policy</a> &middot; <a href="/">Tilde</a></p>
       </footer>
     </main>
+    <script>
+      document.addEventListener('click', function (e) {
+        var d = document.querySelector('.blog');
+        if (d && d.open && !d.contains(e.target)) d.open = false;
+      });
+      document.addEventListener('keydown', function (e) {
+        var d = document.querySelector('.blog');
+        if (e.key === 'Escape' && d) d.open = false;
+      });
+    </script>
   </body>
 </html>
