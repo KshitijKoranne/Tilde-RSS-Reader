@@ -47,6 +47,10 @@
     "macOS": {
       "minimumSystemVersion": "10.15",
       "signingIdentity": "-"
+    },
+    "iOS": {
+      "developmentTeam": "AA2WGR36B2",
+      "minimumSystemVersion": "15.0"
     }
   }
 }

@@ -25,6 +25,16 @@ export function isDesktopApp(): boolean {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 }
 
+/** An iPhone, iPad or iPod (iPadOS reports itself as a touch-capable Mac). The
+ *  layout never asks this — it follows width — only copy and file handling do. */
+export function isMobile(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return (
+    /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  )
+}
+
 let bridge: Promise<Invoke> | null = null
 
 function invoke(): Promise<Invoke> {
@@ -57,6 +67,16 @@ export async function openExternal(url: string): Promise<void> {
 
 /** Writes text wherever this platform writes text. */
 export async function saveTextFile(name: string, contents: string, mime: string): Promise<void> {
+  // ponytail: iOS has no save panel; the share sheet is its "Save to Files".
+  if (isMobile() && typeof navigator.share === 'function') {
+    const file = new File([contents], name, { type: mime })
+    try {
+      await navigator.share({ files: [file] })
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') throw error
+    }
+    return
+  }
   if (isDesktopApp()) {
     await command<boolean>('save_text_file', { name, contents })
     return

@@ -1,4 +1,5 @@
 import { useStore } from '../lib/store'
+import { PaneButton } from './PaneButton'
 import { Suggestions } from './Suggestions'
 
 /* The first-run screen. Tilde subscribes to nothing on your behalf, so this is
@@ -12,6 +13,7 @@ export function WelcomeView() {
   return (
     <section className="welcome-col">
       <header className="settings-head">
+        <PaneButton to="rail">Sources</PaneButton>
         <h1 className="t-h">Choose your sources</h1>
         <span className="kicker">
           {count ? `${count} added` : 'Nothing is added for you'}

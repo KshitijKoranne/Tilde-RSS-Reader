@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { groupNames } from '../lib/feeds'
 import { hostOf } from '../lib/format'
-import { isDesktopApp, pickTextFile } from '../lib/platform'
+import { isDesktopApp, isMobile, pickTextFile } from '../lib/platform'
 import { useStore } from '../lib/store'
 import type {
   Feed,
@@ -11,6 +11,7 @@ import type {
   Retention,
   Settings,
 } from '../lib/types'
+import { PaneButton } from './PaneButton'
 import { Suggestions } from './Suggestions'
 import { Tilde } from './Wordmark'
 
@@ -159,15 +160,17 @@ export function SettingsView() {
     await ingestOpml(() => file.text())
   }
 
-  // The Mac app asks the system for the file; the browser has its own input.
+  // The Mac app asks the system for the file; the browser has its own input,
+  // and so does iOS (its web view opens the Files picker for it).
   const chooseFile = () => {
-    if (isDesktopApp()) void ingestOpml(pickTextFile)
+    if (isDesktopApp() && !isMobile()) void ingestOpml(pickTextFile)
     else fileRef.current?.click()
   }
 
   return (
     <section className="settings-col">
       <header className="settings-head">
+        <PaneButton to="rail">Sources</PaneButton>
         <h1 className="t-h">Settings</h1>
         <span className="kicker">Stored on this device</span>
       </header>
@@ -250,7 +253,7 @@ export function SettingsView() {
             </p>
           </div>
 
-          {TOGGLES.filter((toggle) => !toggle.desktopOnly || isDesktopApp()).map((toggle) => (
+          {TOGGLES.filter((toggle) => !toggle.desktopOnly || (isDesktopApp() && !isMobile())).map((toggle) => (
             <button
               key={toggle.key}
               type="button"
@@ -333,7 +336,14 @@ export function SettingsView() {
         </div>
 
         <span className="kicker set-legend">Privacy</span>
-        {isDesktopApp() ? (
+        {isMobile() ? (
+          <p className="set-prose">
+            <Tilde /> fetches your feeds and keeps every article in a local index on this device.
+            There is no <Tilde /> account, no analytics, and nothing is stored on a server. Each
+            source is requested directly from your device. Deleting <Tilde /> removes everything.{' '}
+            <a href="https://tilde.kjrlabs.in/privacy.html">Privacy policy</a>
+          </p>
+        ) : isDesktopApp() ? (
           <p className="set-prose">
             <Tilde /> fetches your feeds and keeps every article in a local index on this Mac.
             There is no <Tilde /> account, no analytics, and nothing is stored on a server. Each

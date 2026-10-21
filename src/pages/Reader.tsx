@@ -102,6 +102,7 @@ export function Reader() {
       data-reader-font={store.settings.font}
       data-reader-size={store.settings.size}
       data-density={store.settings.density}
+      data-pane={store.pane}
     >
       <Rail />
 

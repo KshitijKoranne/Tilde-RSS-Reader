@@ -3,6 +3,7 @@ import { fullDate } from '../lib/format'
 import { useMarkReadOnScroll, useScrollToTop } from '../lib/hooks'
 import { useStore } from '../lib/store'
 import { ArticleBody } from './ArticleBody'
+import { PaneButton } from './PaneButton'
 import { TildeMark } from './TildeMark'
 import { Tilde } from './Wordmark'
 
@@ -95,6 +96,7 @@ export function ReaderPane() {
   return (
     <section className="read-col">
       <header className="read-head">
+        <PaneButton to="list">Back</PaneButton>
         <span className="kicker" title={selected.feedTitle}>
           {selected.feedTitle}
         </span>

@@ -1,0 +1,40 @@
+# Proves the iOS project generates and compiles on Xcode 27, with no signing.
+# Shipping is done locally: npm run ios:init once, then npm run ios:build.
+
+name: iOS build check
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ios-duo]
+
+jobs:
+  build:
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+      - run: xcodebuild -version
+      - run: npx tauri ios init --ci
+      - name: Show the generated Info.plist
+        run: cat src-tauri/gen/apple/*/Info.plist
+
+      - name: Build for the simulator
+        run: npx tauri ios build --ci --debug --target aarch64-sim

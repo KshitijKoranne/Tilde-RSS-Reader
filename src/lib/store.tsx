@@ -101,8 +101,14 @@ interface TildeStore {
   update(patch: Partial<Settings>): void
   setShowAdd(show: boolean): void
   setZen(zen: boolean): void
+  /** Which column a narrow window shows. Wide windows show all of them and
+   *  ignore this. */
+  pane: Pane
+  setPane(pane: Pane): void
   notify(message: string, tone?: Toast['tone']): void
 }
+
+export type Pane = 'rail' | 'list' | 'read'
 
 const StoreContext = createContext<TildeStore | null>(null)
 
@@ -119,6 +125,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [zen, setZen] = useState(false)
+  const [pane, setPane] = useState<Pane>('list')
   const [refreshing, setRefreshing] = useState(false)
   const [searching, setSearching] = useState(false)
   const [searchIds, setSearchIds] = useState<string[]>([])
@@ -453,6 +460,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setSelectedId(null)
     setSticky(new Set())
     setZen(false)
+    setPane('list')
   }, [])
 
   const setQuery = useCallback((next: string) => {
@@ -471,6 +479,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const open = useCallback(
     (id: string) => {
       setSelectedId(id)
+      setPane('read')
       setRead(id, true)
     },
     [setRead],
@@ -702,7 +711,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     go, step, open, setQuery,
     setRead, toggleStar, markAllRead, loadFullText,
     addFeed, removeFeed, setFeedGroup, toggleGroup, refreshAll, importOpml, exportOpml,
-    update, setShowAdd, setZen, notify,
+    update, setShowAdd, setZen, pane, setPane, notify,
   }
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

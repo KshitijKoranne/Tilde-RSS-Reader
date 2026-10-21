@@ -120,6 +120,20 @@ describe('the reader, end to end', () => {
     expect(store.unreadByGroup.get('Technology')).toBe(2)
   })
 
+  it('walks the panes a narrow window shows: list, article, sources, list', async () => {
+    await act(async () => void (await store.addFeed(FEED_URL)))
+    expect(store.pane).toBe('list')
+
+    act(() => store.open(store.visible[0].id))
+    expect(store.pane).toBe('read')
+
+    act(() => store.setPane('rail'))
+    expect(store.pane).toBe('rail')
+
+    act(() => store.go('saved'))
+    expect(store.pane).toBe('list')
+  })
+
   it('narrows the inbox to one group', async () => {
     await act(async () => void (await store.addFeed(FEED_URL, 'Technology')))
     await act(async () => void (await store.addFeed(OTHER_URL, 'Food')))
