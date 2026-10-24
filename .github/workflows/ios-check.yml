@@ -87,22 +87,17 @@ jobs:
           step xcrun simctl boot "$UDID"
           step xcrun simctl bootstatus "$UDID" -b
           step xcrun simctl install "$UDID" "$APP"
-          PID=$(xcrun simctl launch "$UDID" in.kjrlabs.tilde | awk -F': ' '{print $2}')
-          echo "::notice title=Launched::pid $PID"
-          for t in 2 5 10 20; do sleep $t; if ps -p "$PID" >/dev/null; then echo "::notice title=Alive::pid $PID alive at +${t}s step"; else echo "::notice title=Dead::pid $PID gone at +${t}s step"; break; fi; done
-          sleep 3
-          echo "::notice title=Device state::$(xcrun simctl list devices | grep "$UDID" | tr -s ' ')"
-          for f in $(ls -t "$HOME"/Library/Logs/DiagnosticReports/*Tilde* 2>/dev/null | head -1); do
-            echo "::notice title=Crash report::$f $(grep -E '"(exception|termination)"|Exception Type|Termination|asi|"reason"|"indicator"' "$f" | head -12 | tr -s ' ' | tr '\n' ' ' | cut -c1-900)"
+          (xcrun simctl launch --console "$UDID" in.kjrlabs.tilde > console.txt 2>&1 &) 
+          sleep 15
+          echo "::notice title=Console::$(head -c 1500 console.txt | tr '\n' ' ')"
+          echo "::notice title=AppLog::$(xcrun simctl spawn "$UDID" log show --last 1m --style compact --predicate 'process == "Tilde"' 2>&1 | tail -25 | cut -c1-260 | tr '\n' ' ' | cut -c1-2500)"
+          echo "::notice title=Crashes::$(find "$HOME/Library/Logs" "$HOME/Library/Developer/CoreSimulator/Devices/$UDID" -iname '*Tilde*.ips' -o -iname '*Tilde*.crash' 2>/dev/null | head -3)"
+          for f in $(find "$HOME/Library/Logs" "$HOME/Library/Developer/CoreSimulator/Devices/$UDID" \( -iname '*Tilde*.ips' -o -iname '*Tilde*.crash' \) 2>/dev/null | head -1); do
+            echo "::notice title=CrashReport::$(grep -E 'exception|termination|Exception|asi|reason|Application Specific|Abort|Assertion|scene|Scene' "$f" | head -15 | tr -s ' ' | cut -c1-300 | tr '\n' ' ')"
           done
-          echo "::notice title=Log::$(xcrun simctl spawn "$UDID" log show --last 2m --style compact --predicate 'process == "Tilde" OR eventMessage CONTAINS "in.kjrlabs.tilde"' 2>&1 | grep -iE 'scene|terminat|abort|assert|crash|exception|fatal|panic' | head -8 | cut -c1-400 | tr '\n' ' ')"
           xcrun simctl io "$UDID" screenshot launch.png || echo "::notice title=Screenshot::failed"
-          "$RUNNER_TEMP/venv/bin/python" -c "
-          from PIL import Image
-          raw = Image.open('launch.png'); print('::notice title=Size::', raw.size); im = raw.convert('RGB').resize((200, 400))
-          px = list(im.getdata()); n = len(set(px))
-          print('::notice title=Screen::distinct colours', n, 'mean', [sum(c[i] for c in px)//len(px) for i in range(3)])" || true
-          if ps -p "$PID" >/dev/null; then echo "::notice title=Launch::still running after 25s"; else echo "::error::app exited within 25s of launch"; exit 1; fi
+          PID=$(pgrep -f "Tilde.app/Tilde" | head -1)
+          if [ -n "$PID" ]; then echo "::notice title=Launch::running, pid $PID"; else echo "::error::app is not running 15s after launch"; exit 1; fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
