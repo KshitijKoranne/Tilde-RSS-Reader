@@ -78,9 +78,11 @@ jobs:
         continue-on-error: true
         run: |
           APP=$(find src-tauri/gen/apple "$HOME/Library/Developer/Xcode/DerivedData" -type d -name '*.app' -path '*iphonesimulator*' 2>/dev/null | head -1)
-          UDID=$(xcrun simctl list devices available -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; c=[(k,x['udid']) for k,v in d.items() if 'iOS' in k for x in v if 'iPhone' in x['name']]; print(sorted(c)[-1][1])")
-          RT=$(xcrun simctl list devices available | grep -B30 "$UDID" | grep -E '^-- iOS' | tail -1)
-          step() { out=$("$@" 2>&1); rc=$?; echo "::notice title=$1 $2 rc=$rc::$(echo "$out" | tail -3 | tr '\n' ' ')"; return 0; }
+          RT=$(xcrun simctl list runtimes -j | python3 -c "import sys,json; r=[x for x in json.load(sys.stdin)['runtimes'] if x.get('isAvailable') and x['identifier'].startswith('com.apple.CoreSimulator.SimRuntime.iOS')]; r.sort(key=lambda x: [int(n) for n in x['version'].split('.')]); print(r[-1]['identifier'])")
+          DT=$(xcrun simctl list devicetypes -j | python3 -c "import sys,json; t=json.load(sys.stdin)['devicetypes']; d=[x for x in t if 'duo' in x['name'].lower()] or [x for x in t if x['name'].startswith('iPhone')]; print(d[-1]['identifier'])")
+          echo "::notice title=Sim::runtime $RT / device type $DT"
+          UDID=$(xcrun simctl create tilde-test "$DT" "$RT")
+          step() { out=$("$@" 2>&1); rc=$?; echo "::notice title=$3 rc=$rc::$(echo "$out" | tail -3 | tr '\n' ' ')"; return 0; }
           echo "::notice title=Device::$UDID app=$APP"
           step xcrun simctl boot "$UDID"
           step xcrun simctl bootstatus "$UDID" -b
@@ -97,7 +99,7 @@ jobs:
           xcrun simctl io "$UDID" screenshot launch.png || echo "::notice title=Screenshot::failed"
           "$RUNNER_TEMP/venv/bin/python" -c "
           from PIL import Image
-          im = Image.open('launch.png').convert('RGB').resize((200, 400))
+          raw = Image.open('launch.png'); print('::notice title=Size::', raw.size); im = raw.convert('RGB').resize((200, 400))
           px = list(im.getdata()); n = len(set(px))
           print('::notice title=Screen::distinct colours', n, 'mean', [sum(c[i] for c in px)//len(px) for i in range(3)])" || true
           if ps -p "$PID" >/dev/null; then echo "::notice title=Launch::still running after 25s"; else echo "::error::app exited within 25s of launch"; exit 1; fi
