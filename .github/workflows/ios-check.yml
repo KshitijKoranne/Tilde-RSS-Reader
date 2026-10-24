@@ -120,3 +120,7 @@ jobs:
           name: launch-screenshot
           path: launch.png
           if-no-files-found: ignore
+
+      # The Mac app shares this lockfile, so prove it still compiles on macOS.
+      - name: Mac app still compiles
+        run: npx tauri build --debug --no-bundle
