@@ -70,6 +70,10 @@ export async function saveTextFile(name: string, contents: string, mime: string)
   // ponytail: iOS has no save panel; the share sheet is its "Save to Files".
   if (isMobile() && typeof navigator.share === 'function') {
     const file = new File([contents], name, { type: mime })
+    if (navigator.canShare && !navigator.canShare({ files: [file] })) {
+      downloadBlob(name, contents, mime)
+      return
+    }
     try {
       await navigator.share({ files: [file] })
     } catch (error) {
@@ -81,8 +85,11 @@ export async function saveTextFile(name: string, contents: string, mime: string)
     await command<boolean>('save_text_file', { name, contents })
     return
   }
-  const blob = new Blob([contents], { type: mime })
-  const url = URL.createObjectURL(blob)
+  downloadBlob(name, contents, mime)
+}
+
+function downloadBlob(name: string, contents: string, mime: string): void {
+  const url = URL.createObjectURL(new Blob([contents], { type: mime }))
   const link = document.createElement('a')
   link.href = url
   link.download = name

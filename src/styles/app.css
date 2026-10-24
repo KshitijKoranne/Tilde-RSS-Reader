@@ -903,7 +903,7 @@ a.btn-ghost:hover { color: var(--color-accent); }
 
 /* ── add-feed dialog ────────────────────────────────────────────────────── */
 
-.dialog { width: 460px; max-width: calc(100vw - 48px); }
+.dialog { width: 460px; max-width: 100%; }
 .dialog-intro {
   font-size: 14px;
   line-height: 24px;
@@ -993,7 +993,8 @@ a.btn-ghost:hover { color: var(--color-accent); }
 /* ── narrow windows ─────────────────────────────────────────────────────── */
 
 .nav-sources,
-.nav-back { display: none; }
+.nav-back,
+.rail-done { display: none; }
 
 .zen {
   padding:
@@ -1002,14 +1003,22 @@ a.btn-ghost:hover { color: var(--color-accent); }
 }
 .toast {
   left: calc(20px + env(safe-area-inset-left));
+  right: calc(20px + env(safe-area-inset-right));
+  width: max-content;
   bottom: calc(20px + env(safe-area-inset-bottom));
 }
 .dialog-backdrop {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
   padding:
     max(var(--space-4), env(safe-area-inset-top))
     max(var(--space-4), env(safe-area-inset-right))
     max(var(--space-4), env(safe-area-inset-bottom))
     max(var(--space-4), env(safe-area-inset-left));
+}
+
+body:not(.is-reader) {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 @container tilde (max-width: 1080px) {
@@ -1034,7 +1043,8 @@ a.btn-ghost:hover { color: var(--color-accent); }
     grid-template-columns: 320px minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
   }
-  .nav-sources { display: inline-flex; }
+  .nav-sources,
+  .rail-done { display: inline-flex; }
   .rail,
   .settings-col,
   .welcome-col { grid-column: 1 / -1; }

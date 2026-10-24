@@ -711,7 +711,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     go, step, open, setQuery,
     setRead, toggleStar, markAllRead, loadFullText,
     addFeed, removeFeed, setFeedGroup, toggleGroup, refreshAll, importOpml, exportOpml,
-    update, setShowAdd, setZen, pane, setPane, notify,
+    update, setShowAdd, setZen, pane: pane === 'read' && !selected ? 'list' : pane, setPane, notify,
   }
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

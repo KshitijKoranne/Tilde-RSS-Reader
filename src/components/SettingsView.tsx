@@ -336,7 +336,7 @@ export function SettingsView() {
         </div>
 
         <span className="kicker set-legend">Privacy</span>
-        {isMobile() ? (
+        {isDesktopApp() && isMobile() ? (
           <p className="set-prose">
             <Tilde /> fetches your feeds and keeps every article in a local index on this device.
             There is no <Tilde /> account, no analytics, and nothing is stored on a server. Each

@@ -93,6 +93,9 @@ export function Rail() {
         <span className="kicker" style={{ color: 'var(--color-neutral-700)' }}>
           v1.2
         </span>
+        <button type="button" className="btn btn-ghost rail-done" onClick={() => store.setPane('list')}>
+          Done
+        </button>
       </div>
 
       <nav className="rail-nav">
