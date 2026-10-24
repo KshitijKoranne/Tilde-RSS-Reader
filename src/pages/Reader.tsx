@@ -97,6 +97,7 @@ export function Reader() {
   }, [store.unreadCount])
 
   return (
+    <div className="viewport">
     <div
       className="shell"
       data-reader-font={store.settings.font}
@@ -130,6 +131,7 @@ export function Reader() {
           )}
         </div>
       )}
+    </div>
     </div>
   )
 }

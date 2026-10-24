@@ -1,4 +1,6 @@
-# Proves the iOS project generates and compiles on Xcode 27, with no signing.
+# Proves the iOS project generates and compiles on Xcode 27, with no signing,
+# and checks the things App Review and the iPhone Duo depend on. Results are
+# printed as annotations so they can be read without opening the log.
 # Shipping is done locally: npm run ios:init once, then npm run ios:build.
 
 name: iOS build check
@@ -31,10 +33,31 @@ jobs:
       - run: npm run typecheck
       - run: npm test
 
-      - run: xcodebuild -version
+      - name: Xcode in use
+        run: echo "::notice title=Xcode::$(xcodebuild -version | tr '\n' ' ') / $(xcrun --sdk iphoneos --show-sdk-version)"
+
       - run: npx tauri ios init --ci
-      - name: Show the generated Info.plist
-        run: cat src-tauri/gen/apple/*/Info.plist
+
+      - name: Project is iPhone only
+        run: |
+          grep -q 'TARGETED_DEVICE_FAMILY: "1"' src-tauri/gen/apple/project.yml \
+            || { echo "::error::iPad family is still on"; exit 1; }
 
       - name: Build for the simulator
         run: npx tauri ios build --ci --debug --target aarch64-sim
+
+      - name: Check the built app
+        run: |
+          APP=$(find src-tauri/gen/apple "$HOME/Library/Developer/Xcode/DerivedData" -type d -name '*.app' -path '*iphonesimulator*' 2>/dev/null | head -1)
+          [ -n "$APP" ] || APP=$(find src-tauri/gen/apple -type d -name '*.app' | head -1)
+          [ -n "$APP" ] || { echo "::error::no .app found"; exit 1; }
+          PLIST="$APP/Info.plist"
+          FAMILY=$(plutil -extract UIDeviceFamily json -o - "$PLIST")
+          echo "::notice title=Built app::$APP | UIDeviceFamily=$FAMILY | MinOS=$(plutil -extract MinimumOSVersion raw -o - "$PLIST") | SDK=$(plutil -extract DTSDKName raw -o - "$PLIST" 2>/dev/null)"
+          [ "$FAMILY" = "[1]" ] || { echo "::error::UIDeviceFamily is $FAMILY, expected [1]"; exit 1; }
+          [ -f "$APP/PrivacyInfo.xcprivacy" ] || { echo "::error::PrivacyInfo.xcprivacy is not in the app"; exit 1; }
+          plutil -lint "$APP/PrivacyInfo.xcprivacy"
+          plutil -extract ITSAppUsesNonExemptEncryption raw -o - "$PLIST" | grep -qi false \
+            || { echo "::error::export-compliance key missing"; exit 1; }
+          echo "::notice title=Orientations::$(plutil -extract UISupportedInterfaceOrientations json -o - "$PLIST")"
+          echo "::notice title=FullScreenKey::UIRequiresFullScreen=$(plutil -extract UIRequiresFullScreen raw -o - "$PLIST" 2>&1 | tail -1)"
