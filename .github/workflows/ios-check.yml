@@ -87,8 +87,14 @@ jobs:
           step xcrun simctl install "$UDID" "$APP"
           PID=$(xcrun simctl launch "$UDID" in.kjrlabs.tilde | awk -F': ' '{print $2}')
           echo "::notice title=Launched::pid $PID"
-          sleep 25
-          xcrun simctl io "$UDID" screenshot launch.png || true
+          for t in 2 5 10 20; do sleep $t; if ps -p "$PID" >/dev/null; then echo "::notice title=Alive::pid $PID alive at +${t}s step"; else echo "::notice title=Dead::pid $PID gone at +${t}s step"; break; fi; done
+          sleep 3
+          echo "::notice title=Device state::$(xcrun simctl list devices | grep "$UDID" | tr -s ' ')"
+          for f in $(ls -t "$HOME"/Library/Logs/DiagnosticReports/*Tilde* 2>/dev/null | head -1); do
+            echo "::notice title=Crash report::$f $(grep -E '"(exception|termination)"|Exception Type|Termination|asi|"reason"|"indicator"' "$f" | head -12 | tr -s ' ' | tr '\n' ' ' | cut -c1-900)"
+          done
+          echo "::notice title=Log::$(xcrun simctl spawn "$UDID" log show --last 2m --style compact --predicate 'process == "Tilde" OR eventMessage CONTAINS "in.kjrlabs.tilde"' 2>&1 | grep -iE 'scene|terminat|abort|assert|crash|exception|fatal|panic' | head -8 | cut -c1-400 | tr '\n' ' ')"
+          xcrun simctl io "$UDID" screenshot launch.png || echo "::notice title=Screenshot::failed"
           "$RUNNER_TEMP/venv/bin/python" -c "
           from PIL import Image
           im = Image.open('launch.png').convert('RGB').resize((200, 400))
