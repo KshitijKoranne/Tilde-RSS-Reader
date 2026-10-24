@@ -8,7 +8,7 @@ name: iOS build check
 on:
   workflow_dispatch:
   push:
-    branches: [ios-duo]
+    branches: [ios-duo, ios-tauri212]
 
 jobs:
   build:
@@ -92,9 +92,25 @@ jobs:
           echo "::notice title=Console::$(head -c 1500 console.txt | tr '\n' ' ')"
           echo "::notice title=AppLog::$(xcrun simctl spawn "$UDID" log show --last 1m --style compact --predicate 'process == "Tilde"' 2>&1 | tail -25 | cut -c1-260 | tr '\n' ' ' | cut -c1-2500)"
           echo "::notice title=Crashes::$(find "$HOME/Library/Logs" "$HOME/Library/Developer/CoreSimulator/Devices/$UDID" -iname '*Tilde*.ips' -o -iname '*Tilde*.crash' 2>/dev/null | head -3)"
-          for f in $(find "$HOME/Library/Logs" "$HOME/Library/Developer/CoreSimulator/Devices/$UDID" \( -iname '*Tilde*.ips' -o -iname '*Tilde*.crash' \) 2>/dev/null | head -1); do
-            echo "::notice title=CrashReport::$(grep -E 'exception|termination|Exception|asi|reason|Application Specific|Abort|Assertion|scene|Scene' "$f" | head -15 | tr -s ' ' | cut -c1-300 | tr '\n' ' ')"
-          done
+          F=$(find "$HOME/Library/Logs" "$HOME/Library/Developer/CoreSimulator/Devices/$UDID" \( -iname '*Tilde*.ips' -o -iname '*Tilde*.crash' \) 2>/dev/null | head -1)
+          if [ -n "$F" ]; then python3 - "$F" <<'PY'
+          import json, sys
+          t = open(sys.argv[1]).read()
+          body = json.loads(t[t.index("\n") + 1:]) if t.lstrip().startswith("{") and "\n{" in t else json.loads(t)
+          imgs = body.get("usedImages", [])
+          def fr(f):
+              i = f.get("imageIndex"); n = imgs[i].get("name", "?") if isinstance(i, int) and i < len(imgs) else "?"
+              return f"{n}:{f.get('symbol', '?')}"
+          for th in body.get("threads", []):
+              if th.get("triggered"):
+                  print("::notice title=CrashThread::" + " <- ".join(fr(f) for f in th["frames"][:14]))
+          leb = body.get("lastExceptionBacktrace")
+          if leb: print("::notice title=ExceptionBacktrace::" + " <- ".join(fr(f) for f in leb[:14]))
+          asi = body.get("asi")
+          if asi: print("::notice title=ASI::" + json.dumps(asi)[:600])
+          print("::notice title=CrashKeys::" + json.dumps(body.get("exception"))[:200] + " " + json.dumps(body.get("termination"))[:200])
+          PY
+          fi
           xcrun simctl io "$UDID" screenshot launch.png || echo "::notice title=Screenshot::failed"
           PID=$(pgrep -f "Tilde.app/Tilde" | head -1)
           if [ -n "$PID" ]; then echo "::notice title=Launch::running, pid $PID"; else echo "::error::app is not running 15s after launch"; exit 1; fi
