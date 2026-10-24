@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "tauri": "tauri",
-    "ios:init": "tauri ios init",
+    "ios:init": "tauri ios init && python3 scripts/ios_icons.py",
     "ios:dev": "tauri ios dev",
     "ios:build": "tauri ios build --export-method app-store-connect",
     "mac:dev": "tauri dev",
