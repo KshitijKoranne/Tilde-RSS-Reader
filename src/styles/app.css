@@ -1018,9 +1018,18 @@ a.btn-ghost:hover { color: var(--color-accent); }
   .read-head { padding: 20px 24px; }
 }
 
+/* Three panes, tightened: the iPhone Duo's inner display held landscape has room
+   for sources, list and article together. The article column keeps about 400px,
+   which is the least that reads well, so the first two give ground. */
+@container tilde (min-width: 820px) and (max-width: 899px) {
+  .shell { grid-template-columns: 176px 288px minmax(0, 1fr); }
+  .read-body { padding: 40px 24px 80px; }
+  .read-head { padding: 20px 24px; }
+}
+
 /* Two panes: the list beside the article, as Mail does on the inner display.
    Sources become a pane of their own behind the Sources button. */
-@container tilde (max-width: 899px) {
+@container tilde (max-width: 819px) {
   .shell {
     grid-template-columns: 320px minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
