@@ -40,9 +40,10 @@ jobs:
 
       - name: App icon is opaque
         run: |
-          pip3 install --quiet pillow
-          python3 scripts/ios_icons.py
-          python3 - <<'PY'
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet pillow || { echo "::error::pillow install failed"; exit 1; }
+          "$RUNNER_TEMP/venv/bin/python" scripts/ios_icons.py || { echo "::error::icon script failed"; exit 1; }
+          "$RUNNER_TEMP/venv/bin/python" - <<'PY'
           from PIL import Image
           im = Image.open("src-tauri/gen/apple/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png")
           assert im.size == (1024, 1024) and im.mode == "RGB", (im.size, im.mode)
