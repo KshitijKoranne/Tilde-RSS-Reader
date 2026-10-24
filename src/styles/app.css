@@ -88,11 +88,29 @@ a.btn-ghost:hover { color: var(--color-accent); }
 
 /* ── shell ──────────────────────────────────────────────────────────────── */
 
+/* The box the layout is measured in. Its padding is the system's safe area —
+   per side, because on iPhone Duo the status bar and controls sit on the right
+   and the left inset is different — so its content width is the width that is
+   really usable. Every breakpoint below is a container query on that width, not
+   a media query on the screen: that is what lets the outer display (compact),
+   the inner display (regular) and a Split View half each land on the right
+   layout without the page ever asking which device it is. env() is 0 on a Mac
+   and in a browser. */
+.viewport {
+  height: 100vh;
+  height: 100dvh;
+  padding:
+    env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  container-name: tilde;
+  container-type: inline-size;
+  background: var(--color-bg);
+}
+
 .shell {
   display: grid;
   grid-template-columns: 232px 372px minmax(0, 1fr);
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
   background: var(--color-bg);
 }
 
@@ -885,7 +903,7 @@ a.btn-ghost:hover { color: var(--color-accent); }
 
 /* ── add-feed dialog ────────────────────────────────────────────────────── */
 
-.dialog { width: 460px; max-width: calc(100vw - 48px); }
+.dialog { width: 460px; max-width: 100%; }
 .dialog-intro {
   font-size: 14px;
   line-height: 24px;
@@ -974,25 +992,100 @@ a.btn-ghost:hover { color: var(--color-accent); }
 
 /* ── narrow windows ─────────────────────────────────────────────────────── */
 
-@media (max-width: 1080px) {
+.nav-sources,
+.nav-back,
+.rail-done { display: none; }
+
+.zen {
+  padding:
+    env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.toast {
+  left: calc(20px + env(safe-area-inset-left));
+  right: calc(20px + env(safe-area-inset-right));
+  width: max-content;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+}
+.dialog-backdrop {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  padding:
+    max(var(--space-4), env(safe-area-inset-top))
+    max(var(--space-4), env(safe-area-inset-right))
+    max(var(--space-4), env(safe-area-inset-bottom))
+    max(var(--space-4), env(safe-area-inset-left));
+}
+
+body:not(.is-reader) {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+@container tilde (max-width: 1080px) {
   .shell { grid-template-columns: 200px 320px minmax(0, 1fr); }
   .read-body { padding: 40px 24px 80px; }
   .read-head { padding: 20px 24px; }
 }
 
-@media (max-width: 860px) {
-  body.is-reader { overflow: auto; }
+/* Three panes, tightened: the iPhone Duo's inner display held landscape has room
+   for sources, list and article together. The article column keeps about 400px,
+   which is the least that reads well, so the first two give ground. */
+@container tilde (min-width: 820px) and (max-width: 899px) {
+  .shell { grid-template-columns: 176px 288px minmax(0, 1fr); }
+  .read-body { padding: 40px 24px 80px; }
+  .read-head { padding: 20px 24px; }
+}
+
+/* Two panes: the list beside the article, as Mail does on the inner display.
+   Sources become a pane of their own behind the Sources button. */
+@container tilde (max-width: 819px) {
   .shell {
-    grid-template-columns: minmax(0, 1fr);
-    grid-auto-rows: min-content;
-    height: auto;
-    min-height: 100dvh;
+    grid-template-columns: 320px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
   }
+  .nav-sources,
+  .rail-done { display: inline-flex; }
   .rail,
-  .list-col { border-right: 0; border-bottom: 2px solid var(--color-divider); }
-  .rail-feeds { max-height: 220px; }
-  .list-body { max-height: 60vh; }
   .settings-col,
-  .welcome-col { grid-column: 1; }
+  .welcome-col { grid-column: 1 / -1; }
+  .rail { border-right: 0; }
+  .shell[data-pane='rail'] > .list-col,
+  .shell[data-pane='rail'] > .read-col,
+  .shell[data-pane='rail'] > .settings-col,
+  .shell[data-pane='rail'] > .welcome-col,
+  .shell:not([data-pane='rail']) > .rail { display: none; }
   .list-foot { display: none; }
+}
+
+/* One pane at a time: the outer display in either orientation (it is compact
+   width in both), every ordinary iPhone, and half of a Split View. */
+@container tilde (max-width: 639px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .nav-back { display: inline-flex; }
+  .list-col { border-right: 0; }
+  .shell[data-pane='list'] > .read-col,
+  .shell[data-pane='read'] > .list-col { display: none; }
+  .read-body { padding: 24px 18px 64px; }
+  .read-head,
+  .list-head,
+  .settings-head { padding: 12px 16px; }
+  .settings-body { padding-inline: 16px; }
+  .read-title,
+  .zen-title { font-size: min(var(--title-size), 9cqw); overflow-wrap: anywhere; }
+  .zen-head { padding: 12px 16px; }
+  .zen-body { padding: 24px 18px 12vh; }
+}
+
+/* Fingers, not pointers: the 44pt minimum Apple asks for, and 16px inputs so
+   iOS does not zoom the page when one is focused. */
+@media (pointer: coarse) {
+  .btn,
+  .side-item,
+  .row,
+  .group-fold,
+  .rail-refresh,
+  .list-action { min-height: 44px; }
+  input,
+  select,
+  textarea { font-size: 16px; }
 }

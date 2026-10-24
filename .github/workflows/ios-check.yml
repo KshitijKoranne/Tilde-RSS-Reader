@@ -1,0 +1,126 @@
+# Proves the iOS project generates and compiles on Xcode 27, with no signing,
+# and checks the things App Review and the iPhone Duo depend on. Results are
+# printed as annotations so they can be read without opening the log.
+# Shipping is done locally: npm run ios:init once, then npm run ios:build.
+
+name: iOS build check
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ios-duo, ios-tauri212]
+
+jobs:
+  build:
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+      - name: Xcode in use
+        run: echo "::notice title=Xcode::$(xcodebuild -version | tr '\n' ' ') / $(xcrun --sdk iphoneos --show-sdk-version)"
+
+      - run: npx tauri ios init --ci
+
+      - name: App icon is opaque
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet pillow || { echo "::error::pillow install failed"; exit 1; }
+          "$RUNNER_TEMP/venv/bin/python" scripts/ios_icons.py || { echo "::error::icon script failed"; exit 1; }
+          "$RUNNER_TEMP/venv/bin/python" - <<'PY'
+          from PIL import Image
+          im = Image.open("src-tauri/gen/apple/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png")
+          assert im.size == (1024, 1024) and im.mode == "RGB", (im.size, im.mode)
+          print("::notice title=Icon::1024px RGB, no alpha")
+          PY
+
+      - name: Project is iPhone only
+        run: |
+          grep -q 'TARGETED_DEVICE_FAMILY: "1"' src-tauri/gen/apple/project.yml \
+            || { echo "::error::iPad family is still on"; exit 1; }
+
+      - name: Build for the simulator
+        run: npx tauri ios build --ci --debug --target aarch64-sim
+
+      - name: Check the built app
+        run: |
+          APP=$(find src-tauri/gen/apple "$HOME/Library/Developer/Xcode/DerivedData" -type d -name '*.app' -path '*iphonesimulator*' 2>/dev/null | head -1)
+          [ -n "$APP" ] || APP=$(find src-tauri/gen/apple -type d -name '*.app' | head -1)
+          [ -n "$APP" ] || { echo "::error::no .app found"; exit 1; }
+          PLIST="$APP/Info.plist"
+          FAMILY=$(plutil -extract UIDeviceFamily json -o - "$PLIST")
+          echo "::notice title=Built app::$APP | UIDeviceFamily=$FAMILY | MinOS=$(plutil -extract MinimumOSVersion raw -o - "$PLIST") | SDK=$(plutil -extract DTSDKName raw -o - "$PLIST" 2>/dev/null)"
+          [ "$FAMILY" = "[1]" ] || { echo "::error::UIDeviceFamily is $FAMILY, expected [1]"; exit 1; }
+          [ -f "$APP/PrivacyInfo.xcprivacy" ] || { echo "::error::PrivacyInfo.xcprivacy is not in the app"; exit 1; }
+          plutil -lint "$APP/PrivacyInfo.xcprivacy"
+          plutil -extract ITSAppUsesNonExemptEncryption raw -o - "$PLIST" | grep -qi false \
+            || { echo "::error::export-compliance key missing"; exit 1; }
+          echo "::notice title=Orientations::$(plutil -extract UISupportedInterfaceOrientations json -o - "$PLIST")"
+          echo "::notice title=FullScreenKey::UIRequiresFullScreen=$(plutil -extract UIRequiresFullScreen raw -o - "$PLIST" 2>&1 | tail -1)"
+
+      - name: Launch on a simulator
+        continue-on-error: true
+        run: |
+          APP=$(find src-tauri/gen/apple "$HOME/Library/Developer/Xcode/DerivedData" -type d -name '*.app' -path '*iphonesimulator*' 2>/dev/null | head -1)
+          RT=$(xcrun simctl list runtimes -j | python3 -c "import sys,json; r=[x for x in json.load(sys.stdin)['runtimes'] if x.get('isAvailable') and x['identifier'].startswith('com.apple.CoreSimulator.SimRuntime.iOS')]; r.sort(key=lambda x: [int(n) for n in x['version'].split('.')]); print(r[-1]['identifier'])")
+          DT=$(xcrun simctl list devicetypes -j | python3 -c "import sys,json; t=json.load(sys.stdin)['devicetypes']; d=[x for x in t if 'duo' in x['name'].lower()] or [x for x in t if x['name'].startswith('iPhone')]; print(d[-1]['identifier'])")
+          echo "::notice title=Sim::runtime $RT / device type $DT"
+          UDID=$(xcrun simctl create tilde-test "$DT" "$RT")
+          step() { out=$("$@" 2>&1); rc=$?; echo "::notice title=$3 rc=$rc::$(echo "$out" | tail -3 | tr '\n' ' ')"; return 0; }
+          echo "::notice title=Device::$UDID app=$APP"
+          step xcrun simctl boot "$UDID"
+          step xcrun simctl bootstatus "$UDID" -b
+          step xcrun simctl install "$UDID" "$APP"
+          (xcrun simctl launch --console "$UDID" in.kjrlabs.tilde > console.txt 2>&1 &) 
+          sleep 15
+          echo "::notice title=Console::$(head -c 1500 console.txt | tr '\n' ' ')"
+          echo "::notice title=AppLog::$(xcrun simctl spawn "$UDID" log show --last 1m --style compact --predicate 'process == "Tilde"' 2>&1 | tail -25 | cut -c1-260 | tr '\n' ' ' | cut -c1-2500)"
+          echo "::notice title=Crashes::$(find "$HOME/Library/Logs" "$HOME/Library/Developer/CoreSimulator/Devices/$UDID" -iname '*Tilde*.ips' -o -iname '*Tilde*.crash' 2>/dev/null | head -3)"
+          F=$(find "$HOME/Library/Logs" "$HOME/Library/Developer/CoreSimulator/Devices/$UDID" \( -iname '*Tilde*.ips' -o -iname '*Tilde*.crash' \) 2>/dev/null | head -1)
+          if [ -n "$F" ]; then python3 - "$F" <<'PY'
+          import json, sys
+          t = open(sys.argv[1]).read()
+          body = json.loads(t[t.index("\n") + 1:]) if t.lstrip().startswith("{") and "\n{" in t else json.loads(t)
+          imgs = body.get("usedImages", [])
+          def fr(f):
+              i = f.get("imageIndex"); n = imgs[i].get("name", "?") if isinstance(i, int) and i < len(imgs) else "?"
+              return f"{n}:{f.get('symbol', '?')}"
+          for th in body.get("threads", []):
+              if th.get("triggered"):
+                  print("::notice title=CrashThread::" + " <- ".join(fr(f) for f in th["frames"][:14]))
+          leb = body.get("lastExceptionBacktrace")
+          if leb: print("::notice title=ExceptionBacktrace::" + " <- ".join(fr(f) for f in leb[:14]))
+          asi = body.get("asi")
+          if asi: print("::notice title=ASI::" + json.dumps(asi)[:600])
+          print("::notice title=CrashKeys::" + json.dumps(body.get("exception"))[:200] + " " + json.dumps(body.get("termination"))[:200])
+          PY
+          fi
+          xcrun simctl io "$UDID" screenshot launch.png || echo "::notice title=Screenshot::failed"
+          PID=$(pgrep -f "Tilde.app/Tilde" | head -1)
+          if [ -n "$PID" ]; then echo "::notice title=Launch::running, pid $PID"; else echo "::error::app is not running 15s after launch"; exit 1; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: launch-screenshot
+          path: launch.png
+          if-no-files-found: ignore
+
+      # The Mac app shares this lockfile, so prove it still compiles on macOS.
+      - name: Mac app still compiles
+        run: npx tauri build --debug --no-bundle

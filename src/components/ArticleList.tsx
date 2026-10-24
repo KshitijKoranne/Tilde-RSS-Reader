@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { plural, shortTime } from '../lib/format'
 import { useStore } from '../lib/store'
+import { PaneButton } from './PaneButton'
 
 const HINTS = ['j / k move', 'o open', 'm read', 's save', '/ search', 'f full screen']
 // The same keys the reader answers to that the strip leaves out by default.
@@ -58,6 +59,7 @@ export function ArticleList() {
     <section className="list-col">
       <header className="list-head">
         <div className="list-head-top">
+          <PaneButton to="rail">Sources</PaneButton>
           <h1 className="t-h list-title" title={title}>
             {title}
           </h1>

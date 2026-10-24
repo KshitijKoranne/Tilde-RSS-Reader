@@ -97,11 +97,13 @@ export function Reader() {
   }, [store.unreadCount])
 
   return (
+    <div className="viewport">
     <div
       className="shell"
       data-reader-font={store.settings.font}
       data-reader-size={store.settings.size}
       data-density={store.settings.density}
+      data-pane={store.pane}
     >
       <Rail />
 
@@ -129,6 +131,7 @@ export function Reader() {
           )}
         </div>
       )}
+    </div>
     </div>
   )
 }
