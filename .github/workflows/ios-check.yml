@@ -80,9 +80,12 @@ jobs:
           APP=$(find src-tauri/gen/apple "$HOME/Library/Developer/Xcode/DerivedData" -type d -name '*.app' -path '*iphonesimulator*' 2>/dev/null | head -1)
           UDID=$(xcrun simctl list devices available -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; c=[(k,x['udid']) for k,v in d.items() if 'iOS' in k for x in v if 'iPhone' in x['name']]; print(sorted(c)[-1][1])")
           RT=$(xcrun simctl list devices available | grep -B30 "$UDID" | grep -E '^-- iOS' | tail -1)
-          xcrun simctl boot "$UDID"; xcrun simctl bootstatus "$UDID" -b >/dev/null
-          xcrun simctl install "$UDID" "$APP"
-          xcrun simctl launch "$UDID" in.kjrlabs.tilde
+          step() { out=$("$@" 2>&1); rc=$?; echo "::notice title=$1 $2 rc=$rc::$(echo "$out" | tail -3 | tr '\n' ' ')"; return 0; }
+          echo "::notice title=Device::$UDID app=$APP"
+          step xcrun simctl boot "$UDID"
+          step xcrun simctl bootstatus "$UDID" -b
+          step xcrun simctl install "$UDID" "$APP"
+          step xcrun simctl launch "$UDID" in.kjrlabs.tilde
           sleep 20
           LIVE=$(xcrun simctl spawn "$UDID" launchctl list | grep in.kjrlabs.tilde | awk '$1 != "-"' | head -1)
           xcrun simctl io "$UDID" screenshot launch.png
