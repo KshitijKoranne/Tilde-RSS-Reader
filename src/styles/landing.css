@@ -327,6 +327,8 @@ html { scroll-behavior: smooth; }
   letter-spacing: -0.01em;
 }
 .choose-card .dl-badge { margin-top: auto; align-self: flex-start; }
+.dl-badge-soon { color: #fff; opacity: 0.72; cursor: default; box-shadow: none; }
+.dl-badge-soon:hover { transform: none; box-shadow: none; }
 
 /* — Blog dropdown (native <details>, no library) — */
 .landing .nav { position: relative; }

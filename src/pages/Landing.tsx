@@ -26,6 +26,34 @@ function MacDownload() {
   )
 }
 
+/** Set this to the App Store link the day the iPhone app goes live; until then
+ *  the card says it is coming rather than pointing at a page that does not exist. */
+const IOS_APP_STORE: string | null = null
+
+function IosDownload() {
+  const body = (
+    <>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+        <rect x="7" y="2.5" width="10" height="19" rx="2.2" />
+        <path d="M11 18.5h2" strokeLinecap="round" />
+      </svg>
+      <span className="dl-badge-text">
+        <small>{IOS_APP_STORE ? 'Download on the' : 'Coming soon to the'}</small>
+        <strong>App Store</strong>
+      </span>
+    </>
+  )
+  return IOS_APP_STORE ? (
+    <a href={IOS_APP_STORE} className="dl-badge" aria-label="Download Tilde on the App Store">
+      {body}
+    </a>
+  ) : (
+    <span className="dl-badge dl-badge-soon" role="note" aria-label="Tilde for iPhone is coming soon to the App Store">
+      {body}
+    </span>
+  )
+}
+
 /* iPadOS reports itself as a Mac, so the touch count is the tiebreaker. It
  * only decides whether the hero offers the download — the section below always
  * does, because someone on a phone may well be choosing for their laptop. */
@@ -134,7 +162,7 @@ export function Landing() {
           Why <Tilde />
         </a>
         <a href="#compare">How it compares</a>
-        <a href="#mac">Mac app</a>
+        <a href="#mac">Mac and iPhone</a>
         <a href="#keys">Shortcuts</a>
         <details className="nav-menu">
           <summary>Blog</summary>
@@ -197,7 +225,7 @@ export function Landing() {
             )}
           </div>
           <p className="hero-note">
-            Free either way — the same reader in a browser tab or in your Dock.{' '}
+            Free everywhere — the same reader in a browser tab, in your Dock, and soon on your iPhone.{' '}
             <a href="#mac">What is the difference?</a>
           </p>
         </section>
@@ -258,8 +286,8 @@ export function Landing() {
             </table>
           </div>
           <p className="compare-note">
-            <Tilde /> is a web page, so there is nothing to install — and a Mac app, if you would
-            rather have it in the Dock. Open either one, add a few sites, and it remembers them next
+            <Tilde /> is a web page, so there is nothing to install — and a Mac app and an iPhone
+            app, if you would rather have it in the Dock or in your pocket. Open either one, add a few sites, and it remembers them next
             time.
           </p>
         </section>
@@ -267,11 +295,11 @@ export function Landing() {
         <hr className="hr" />
 
         <section id="mac" className="choose">
-          <span className="eyebrow">Two ways to read</span>
-          <h2 className="t-display">In a browser, or in your Dock</h2>
+          <span className="eyebrow">Three ways to read</span>
+          <h2 className="t-display">In a browser, in your Dock, or in your pocket</h2>
           <p className="choose-lede">
-            The same reader either way — same feeds, same shortcuts, same articles kept on your own
-            machine. What changes is where it runs.
+            The same reader every time — same feeds, same articles kept on your own device. What
+            changes is where it runs.
           </p>
 
           <div className="choose-grid">
@@ -311,6 +339,23 @@ export function Landing() {
                   Download it from GitHub
                 </a>
                 .
+              </p>
+            </article>
+
+            <article className="choose-card">
+              <span className="kicker">On iPhone</span>
+              <h3 className="t-display">Made for the phone in your hand</h3>
+              <ul className="choose-list">
+                <li>One pane at a time: your sources, then the list, then the article</li>
+                <li>
+                  Made for iPhone Duo too — the layout follows the screen as the phone folds and
+                  opens, and the inner display gets a wider view with the list and article side by side
+                </li>
+                <li>Import and export your OPML list through the iOS share sheet</li>
+              </ul>
+              <IosDownload />
+              <p className="choose-foot">
+                Free. No account. For iPhone and iPhone Duo, iOS 16.4 or later.
               </p>
             </article>
           </div>
