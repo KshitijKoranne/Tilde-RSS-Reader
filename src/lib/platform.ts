@@ -25,6 +25,12 @@ export function isDesktopApp(): boolean {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 }
 
+/** A finger is the main pointer: no hover, no hardware keyboard to speak of.
+ *  Used only to drop keyboard hints that mean nothing on a touch screen. */
+export function isTouch(): boolean {
+  return typeof matchMedia === 'function' && matchMedia('(hover: none) and (pointer: coarse)').matches
+}
+
 /** An iPhone, iPad or iPod (iPadOS reports itself as a touch-capable Mac). The
  *  layout never asks this — it follows width — only copy and file handling do. */
 export function isMobile(): boolean {

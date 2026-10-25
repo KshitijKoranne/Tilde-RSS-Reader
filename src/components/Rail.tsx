@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { hostOf } from '../lib/format'
-import { isDesktopApp } from '../lib/platform'
+import pkg from '../../package.json'
+import { isDesktopApp, isTouch } from '../lib/platform'
 import { useStore } from '../lib/store'
 import type { Feed, View } from '../lib/types'
 import { Brand } from './Wordmark'
@@ -72,7 +73,7 @@ export function Rail() {
   const navItems: NavDef[] = [
     { key: 'inbox', label: 'Unread', count: store.unreadCount },
     { key: 'saved', label: 'Saved', count: store.savedCount },
-    { key: 'search', label: 'Search', count: '/' },
+    { key: 'search', label: 'Search', count: isTouch() ? '' : '/' },
     { key: 'settings', label: 'Settings', count: '' },
   ]
 
@@ -91,7 +92,7 @@ export function Rail() {
           </Link>
         )}
         <span className="kicker" style={{ color: 'var(--color-neutral-700)' }}>
-          v1.2
+          v{pkg.version}
         </span>
         <button type="button" className="btn btn-ghost rail-done" onClick={() => store.setPane('list')}>
           Done

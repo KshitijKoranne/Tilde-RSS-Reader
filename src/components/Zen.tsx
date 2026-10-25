@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { fullDate } from '../lib/format'
 import { useMarkReadOnScroll, useScrollToTop } from '../lib/hooks'
+import { isTouch } from '../lib/platform'
 import { useStore } from '../lib/store'
 import { ArticleBody } from './ArticleBody'
 
@@ -22,9 +23,11 @@ export function Zen() {
     <div className="zen" role="dialog" aria-modal="true" aria-label={article.title}>
       <div className="zen-head">
         <span className="kicker">{article.feedTitle}</span>
-        <span className="kicker" style={{ color: 'var(--color-neutral-700)' }}>
-          Esc to leave
-        </span>
+        {!isTouch() && (
+          <span className="kicker" style={{ color: 'var(--color-neutral-700)' }}>
+            Esc to leave
+          </span>
+        )}
         <button type="button" className="btn btn-ghost" onClick={() => store.setZen(false)}>
           Close
         </button>

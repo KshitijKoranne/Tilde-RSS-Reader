@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { groupNames } from '../lib/feeds'
 import { hostOf } from '../lib/format'
-import { isDesktopApp, isMobile, pickTextFile } from '../lib/platform'
+import { isDesktopApp, isMobile, isTouch, pickTextFile } from '../lib/platform'
 import { useStore } from '../lib/store'
 import type {
   Feed,
@@ -26,7 +26,7 @@ const SIZES: ReaderSize[] = ['Small', 'Regular', 'Large']
 const DENSITIES: ListDensity[] = ['Comfortable', 'Compact']
 const RETENTIONS: Retention[] = ['Keep everything', '1 year', '6 months', '3 months']
 
-const TOGGLES: { key: keyof Settings; label: string; note: string; desktopOnly?: boolean }[] = [
+const TOGGLES: { key: keyof Settings; label: string; note: string; desktopOnly?: boolean; keyboardOnly?: boolean }[] = [
   {
     key: 'markReadOnScroll',
     label: 'Mark read when scrolled past',
@@ -46,11 +46,13 @@ const TOGGLES: { key: keyof Settings; label: string; note: string; desktopOnly?:
     key: 'showKeyboardHints',
     label: 'Show the shortcut strip',
     note: 'The row of key hints under the article list.',
+    keyboardOnly: true,
   },
   {
     key: 'showAllHints',
     label: 'Show every shortcut in the strip',
     note: 'Adds a to add a source and r to refresh. Needs the shortcut strip above.',
+    keyboardOnly: true,
   },
   {
     key: 'undoMarkAllRead',
@@ -253,7 +255,10 @@ export function SettingsView() {
             </p>
           </div>
 
-          {TOGGLES.filter((toggle) => !toggle.desktopOnly || (isDesktopApp() && !isMobile())).map((toggle) => (
+          {TOGGLES.filter(
+            (toggle) =>
+              (!toggle.desktopOnly || (isDesktopApp() && !isMobile())) && !(toggle.keyboardOnly && isTouch()),
+          ).map((toggle) => (
             <button
               key={toggle.key}
               type="button"

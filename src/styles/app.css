@@ -1085,6 +1085,20 @@ body:not(.is-reader) {
   .group-fold,
   .rail-refresh,
   .list-action { min-height: 44px; }
+  .nav-back,
+  .rail-done { min-height: 44px; }
+  .read-zen-link button,
+  .read-original a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  /* No hardware keyboard to read the shortcut strip against; no double-tap
+     zoom delay; no grey flash on tap. */
+  .list-foot { display: none; }
+  button,
+  a,
+  .row { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   input,
   select,
   textarea { font-size: 16px; }
