@@ -1,6 +1,7 @@
 import { useRef, type ReactNode } from 'react'
 import { fullDate } from '../lib/format'
 import { useMarkReadOnScroll, useScrollToTop } from '../lib/hooks'
+import { isTouch } from '../lib/platform'
 import { useStore } from '../lib/store'
 import { ArticleBody } from './ArticleBody'
 import { PaneButton } from './PaneButton'
@@ -45,7 +46,7 @@ function EmptyState() {
     }
   } else if (store.view === 'saved') {
     title = 'Nothing saved yet'
-    note = 'Press s on any article to keep it here.'
+    note = isTouch() ? 'Tap Save on any article to keep it here.' : 'Press s on any article to keep it here.'
   } else if (store.refreshing) {
     title = 'Fetching'
     note = (
@@ -129,7 +130,7 @@ export function ReaderPane() {
           )}
           <p className="read-zen-link">
             <button type="button" onClick={() => store.setZen(true)}>
-              Read full screen — f
+              {isTouch() ? 'Read full screen' : 'Read full screen — f'}
             </button>
           </p>
         </div>
